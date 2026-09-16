@@ -5,8 +5,8 @@ Workspace root: `--workspace`, else `$JOBAPPLY_WORKSPACE`, else `./workspace`. A
 | File | Written by | Purpose |
 |---|---|---|
 | `application.json` | `jobapply new`, applicant | `company`, `role`, `language`, `posting_url`, `form_url`, `attachments` (files from `attachments/manifest.json` to upload, in order), `profile_overrides` (deep-merged over `profile.json` for this Application only) |
-| `snapshot.html`, `snapshot.md` | `jobapply fetch` | The Posting as fetched; `.md` is the readable text |
-| `posting.json` | `jobapply fetch`, applicant | Facts about the Posting used by the cover-letter Template: `company`, `role`, `reference`, `location`, `workload`, `contact.{salutation,first_name,last_name,email,phone}`, `address.{company_line,street,postal_code,city,country}`, `requirements` (list of strings), `description` |
+| `snapshot.html`, `snapshot.md` | `jobapply new`, `jobapply fetch` | The Posting as fetched; `.md` is the readable text. `new` fetches before the folder exists so the page's company and role can name it |
+| `posting.json` | `jobapply new`, `jobapply fetch`, applicant | Facts about the Posting used by the cover-letter Template: `company`, `role`, `reference`, `location`, `workload`, `contact.{salutation,first_name,last_name,email,phone}`, `address.{company_line,street,postal_code,city,country}`, `requirements` (list of strings), `description` |
 | `cover-letter.json` | applicant | The specific half of the letter: `draft` (must be `false` before render), `subject`, `salutation` (empty = built from `posting.contact` via `salutation_named` in `cover-letter.<lang>.json`, or `salutation_default` when no contact is known), `intro` (paragraphs, markdown), `body` (paragraphs, markdown). Letter order: `intro` → fixed `about_me` → `body` → fixed `closing` |
 | `form-fields.json` | `jobapply scan`, applicant | The Field Map: `pages[]`, each with `url` and `fields[]`. A field's `value` says what to fill; `null` means skip |
 | `out/` | `jobapply render` | The PDFs |

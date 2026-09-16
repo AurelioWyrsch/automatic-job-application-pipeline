@@ -20,14 +20,14 @@ Then edit the workspace (see below) and start your first application:
 jobapply run
 ```
 
-`run` asks for company, role, the posting URL and the form URL, then works through every step and stops only where you're needed. `jobapply` finds `./workspace` automatically when you run it from the project folder; elsewhere pass `--workspace <dir>` or set `JOBAPPLY_WORKSPACE`.
+`run` asks for the posting URL, fetches the page and proposes company, role and form URL for you to confirm, then works through every step and stops only where you're needed. `jobapply` finds `./workspace` automatically when you run it from the project folder; elsewhere pass `--workspace <dir>` or set `JOBAPPLY_WORKSPACE`.
 
 ## How a run goes
 
 | Step | Who | What happens |
 |---|---|---|
-| new | you | `run` asks for company, role, posting URL, form URL, language |
-| fetch | tool | saves a snapshot of the posting (HTML + readable text) and extracts what it can into `posting.json` |
+| new | you | `run` asks for the posting URL, fetches it and proposes company, role and form URL (from the page's JSON-LD, title or apply link); you confirm or correct them and choose the language |
+| fetch | tool | saves a snapshot of the posting (HTML + readable text) and extracts what it can into `posting.json` — done together with `new`; `jobapply fetch` re-fetches |
 | letter | you | complete `posting.json`, write the job-specific half of the letter in `cover-letter.json`, set `"draft": false` — by hand or with the `extract-posting` and `draft-cover-letter` skills |
 | render | tool | CV, cover letter and a merged PDF with all attachments into `out/`; offers to open them |
 | scan | tool + you | opens the form in Chrome, detects every field, guesses what goes where, writes `form-fields.json`; you fix what it missed (or the `map-fields` skill) |
@@ -36,7 +36,7 @@ jobapply run
 
 Quit at any pause with `q`; `jobapply run <slug>` resumes at the same step, because progress is read from the files in the application folder. `jobapply back <slug>` undoes the last completed step. `jobapply status` shows every application.
 
-Each step also exists as its own command (`new`, `fetch`, `render`, `scan`, `fill`) if you'd rather drive them yourself; `jobapply --help` lists them. Any unique part of a slug works as the argument, e.g. `jobapply run acme`.
+Each step also exists as its own command (`new`, `fetch`, `render`, `scan`, `fill`) if you'd rather drive them yourself; `jobapply --help` lists them. `jobapply new <posting-url>` is all it takes to start one; `--company`, `--role`, `--form` and `--lang` skip the corresponding prompt. Any unique part of a slug works as the argument, e.g. `jobapply run acme`.
 
 `scan` and `fill` act on whatever page the browser is showing and can be repeated, so multi-page forms are handled page by page (`[s]` scan, `[f]` fill, `[q]` quit inside the session). The browser profile is persistent, so a login survives between runs.
 

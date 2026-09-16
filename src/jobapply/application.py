@@ -54,6 +54,11 @@ def slugify(text: str, max_length: int = 40) -> str:
     return text or "x"
 
 
+def posting_key(url: str) -> str:
+    """Two URLs name the same Posting when they differ only by fragment or trailing slash."""
+    return url.split("#", 1)[0].strip().rstrip("/")
+
+
 @dataclass
 class Step:
     name: str
@@ -119,6 +124,16 @@ class Application:
             raise JobapplyError(f"No application matches {ref!r} in {apps_dir}")
         names = "\n  ".join(p.name for p in candidates)
         raise JobapplyError(f"{ref!r} is ambiguous, matches:\n  {names}")
+
+    @classmethod
+    def find_by_posting_url(cls, workspace: Workspace, url: str) -> "Application | None":
+        """The Application already created for this Posting, if any."""
+        wanted = posting_key(url)
+        for folder in cls.list_folders(workspace):
+            app = cls(workspace, folder)
+            if posting_key(app.data.get("posting_url") or "") == wanted:
+                return app
+        return None
 
     @staticmethod
     def list_folders(workspace: Workspace) -> list[Path]:

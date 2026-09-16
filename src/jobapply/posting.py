@@ -1,8 +1,12 @@
 """Fetch a Posting: save a Snapshot and extract structured facts when the page offers them.
 
 Deterministic only. Many job boards embed a schema.org ``JobPosting`` JSON-LD
-block; when present it fills posting.json. Otherwise the Snapshot is saved and
-the applicant (or the /extract-posting skill) completes posting.json by hand.
+block; when present it fills posting.json. Otherwise only the page title and
+``<h1>`` are read (for company and role), and the applicant (or the
+/extract-posting skill) completes posting.json by hand.
+
+``new_application`` is the `jobapply new` flow: the page is fetched *before* the
+Application exists, so its company and role can name the folder.
 """
 
 from __future__ import annotations
@@ -10,12 +14,17 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable
+from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup, Tag
 
 from .application import Application
 from .errors import JobapplyError
+from .workspace import Workspace
+
+Ask = Callable[[str, str | None], str]
+Download = Callable[[str], str]
 
 
 @dataclass
@@ -154,18 +163,128 @@ def apply_job_posting(posting: dict[str, Any], jp: dict[str, Any]) -> list[str]:
     return updated
 
 
-def fetch_posting(app: Application) -> FetchResult:
-    url = app.data.get("posting_url")
-    if not url:
-        raise JobapplyError("application.json has no posting_url")
-    channel = (app.workspace.config.get("browser") or {}).get("channel", "chrome")
-    html = download(url, channel=channel)
+@dataclass
+class Proposal:
+    """What `jobapply new` proposes from a Posting page before the applicant confirms it."""
+
+    company: str = ""
+    role: str = ""
+    form_url: str = ""
+
+
+def propose(html: str, posting_url: str, apply_labels: list[str]) -> Proposal:
+    """Derive company, role and the apply link from a Posting page, deterministically.
+
+    JSON-LD ``JobPosting`` first; otherwise the page title and ``<h1>``. The Form
+    URL is the first anchor whose text is an apply label, else the Posting URL.
+    """
+    proposal = Proposal(form_url=posting_url)
+    facts: dict[str, Any] = {}
+    for jp in find_job_postings(html):
+        apply_job_posting(facts, jp)
+    soup = BeautifulSoup(html, "html.parser")
+    company, role = _company_and_role_from_title(soup)
+    proposal.company = facts.get("company") or company
+    proposal.role = facts.get("role") or role
+    link = _apply_link(soup, apply_labels)
+    if link:
+        proposal.form_url = urljoin(posting_url, link)
+    return proposal
+
+
+def _meta(soup: BeautifulSoup, prop: str) -> str:
+    tag = soup.find("meta", attrs={"property": prop}) or soup.find("meta", attrs={"name": prop})
+    return str(tag.get("content") or "").strip() if isinstance(tag, Tag) else ""
+
+
+def _company_and_role_from_title(soup: BeautifulSoup) -> tuple[str, str]:
+    """Read "Role | Company" / "Company – Role" titles. Leaves the company empty rather than
+    guessing when the title's parts cannot be told apart from the role."""
+    company = _meta(soup, "og:site_name")
+    h1 = soup.find("h1")
+    role = h1.get_text(" ", strip=True) if h1 else _meta(soup, "og:title")
+    title = soup.title.get_text(" ", strip=True) if soup.title else ""
+    parts = [p.strip() for p in re.split(r"\s+[|–—-]\s+", title) if p.strip()]
+    if len(parts) < 2:
+        return company, role
+    if not role:
+        return company or parts[-1], parts[0]
+    others = [p for p in parts if not (p.startswith(role) or role.startswith(p))]
+    if others and len(others) < len(parts):  # one part is the role, so the rest is the company
+        company = company or others[-1]
+    return company, role
+
+
+def _label_key(text: str) -> str:
+    return " ".join(re.sub(r"[^\w\s]", " ", text.lower()).split())
+
+
+def _apply_link(soup: BeautifulSoup, apply_labels: list[str]) -> str:
+    labels = {_label_key(label) for label in apply_labels}
+    for anchor in soup.find_all("a", href=True):
+        href = str(anchor["href"]).strip()
+        if href.lower().startswith(("mailto:", "javascript:", "#")):
+            continue
+        if _label_key(anchor.get_text(" ", strip=True)) in labels:
+            return href
+    return ""
+
+
+def _downloader(workspace: Workspace) -> Download:
+    channel = (workspace.config.get("browser") or {}).get("channel", "chrome")
+    return lambda url: download(url, channel=channel)
+
+
+def store_snapshot(app: Application, url: str, html: str) -> FetchResult:
+    """Write the Snapshot into the Application and fill empty posting.json fields from JSON-LD."""
     app.snapshot_html.write_text(html, encoding="utf-8")
     app.snapshot_md.write_text(f"# Snapshot of {url}\n\n" + to_markdown(html), encoding="utf-8")
-
     result = FetchResult()
     posting = app.posting()
     for jp in find_job_postings(html):
         result.extracted += apply_job_posting(posting, jp)
     app.save_posting(posting)
     return result
+
+
+def fetch_posting(app: Application) -> FetchResult:
+    url = app.data.get("posting_url")
+    if not url:
+        raise JobapplyError("application.json has no posting_url")
+    return store_snapshot(app, url, _downloader(app.workspace)(url))
+
+
+def new_application(
+    workspace: Workspace,
+    posting_url: str,
+    ask: Ask,
+    *,
+    download: Download | None = None,
+    company: str | None = None,
+    role: str | None = None,
+    form_url: str | None = None,
+    language: str | None = None,
+) -> Application:
+    """Fetch the Posting, propose company / role / Form URL for confirmation, create the Application.
+
+    Explicit keyword values are taken as confirmed and not asked. The Application is
+    born with its Snapshot, so `fetch` is already done. posting.json keeps the page's
+    own wording where the page had any, even if the applicant shortened a name for the folder.
+    """
+    existing = Application.find_by_posting_url(workspace, posting_url)
+    if existing:
+        raise JobapplyError(f"This Posting already has an Application: {existing.slug}")
+    html = (download or _downloader(workspace))(posting_url)
+    proposal = propose(html, posting_url, workspace.apply_labels())
+    company = company or ask("Company", proposal.company or None)
+    role = role or ask("Role / job title", proposal.role or None)
+    form_url = form_url or ask("Form URL (where you apply)", proposal.form_url)
+    language = language or ask("Language of the documents", workspace.default_language)
+    app = Application.create(workspace, company=company, role=role, language=language,
+                             posting_url=posting_url, form_url=form_url)
+    posting = app.posting()
+    posting["company"] = proposal.company or company
+    posting["role"] = proposal.role or role
+    app.save_posting(posting)
+    store_snapshot(app, posting_url, html)
+    return app

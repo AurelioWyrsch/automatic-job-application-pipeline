@@ -42,6 +42,7 @@ BUILTIN_LANGUAGES: dict[str, dict[str, Any]] = {
             "birth_date": "Geburtsdatum", "nationality": "Nationalität", "permit": "Bewilligung",
             "portfolio": "Portfolio", "linkedin": "LinkedIn", "github": "GitHub",
         },
+        "apply_labels": ["Jetzt bewerben", "Jetzt online bewerben", "Online bewerben", "Bewerben"],
     },
     "en": {
         "months": ["January", "February", "March", "April", "May", "June", "July",
@@ -69,6 +70,7 @@ BUILTIN_LANGUAGES: dict[str, dict[str, Any]] = {
             "birth_date": "Date of birth", "nationality": "Nationality", "permit": "Work permit",
             "portfolio": "Portfolio", "linkedin": "LinkedIn", "github": "GitHub",
         },
+        "apply_labels": ["Apply now", "Apply online", "Apply"],
     },
 }
 

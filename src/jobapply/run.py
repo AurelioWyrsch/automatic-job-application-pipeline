@@ -7,12 +7,13 @@ any pause and running the command again resumes at the same place.
 from __future__ import annotations
 
 import sys
-from typing import Callable, Optional
+from typing import Optional
 
 import typer
 
 from .application import Application
 from .errors import JobapplyError
+from .posting import Ask, Download
 from .workspace import Workspace
 
 
@@ -38,8 +39,10 @@ def _open(path) -> None:
         typer.echo(f"  open manually: {path}")
 
 
-def choose_application(ws: Workspace, ask: Callable[[str, Optional[str]], str]) -> Application:
-    """Pick an open Application by number, or create a new one."""
+def choose_application(ws: Workspace, ask: Ask, download: Download | None = None) -> Application:
+    """Pick an open Application by number, or start a new one from a Posting URL."""
+    from .posting import new_application
+
     folders = Application.list_folders(ws)
     apps = [Application(ws, f) for f in folders]
     open_apps = [a for a in apps if not all(s.done for s in a.steps())]
@@ -56,13 +59,15 @@ def choose_application(ws: Workspace, ask: Callable[[str, Optional[str]], str]) 
             if answer.isdigit() and 1 <= int(answer) <= len(open_apps):
                 return open_apps[int(answer) - 1]
     typer.secho("New application", bold=True)
-    company = ask("Company", None)
-    role = ask("Role / job title", None)
-    posting_url = ask("Posting URL (job description)", None)
-    form_url = ask("Form URL (where you apply)", posting_url)
-    language = ask("Language of the documents", ws.default_language)
-    app = Application.create(ws, company=company, role=role, language=language,
-                             posting_url=posting_url, form_url=form_url)
+    while True:
+        posting_url = ask("Posting URL (job description)", None)
+        existing = Application.find_by_posting_url(ws, posting_url)
+        if existing is None:
+            break
+        if ask(f"Continue {existing.slug} instead? (y/n)", "y").lower().startswith("y"):
+            return existing
+    typer.echo("Fetching the posting …")
+    app = new_application(ws, posting_url, ask, download=download)
     typer.echo(f"Created {app.folder}")
     return app
 

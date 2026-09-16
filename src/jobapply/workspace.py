@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 from .errors import JobapplyError
-from .i18n import Language
+from .i18n import BUILTIN_LANGUAGES, Language, deep_merge
 
 ENV_VAR = "JOBAPPLY_WORKSPACE"
 DEFAULT_DIR = "workspace"
@@ -113,6 +113,13 @@ class Workspace:
 
     def language(self, code: str) -> Language:
         return Language(code, self.config.get("languages"))
+
+    def apply_labels(self) -> list[str]:
+        """Link texts that lead from a Posting to its Form, across every known Language
+        (the Posting's language is unrelated to the one the applicant will choose)."""
+        packs = deep_merge(BUILTIN_LANGUAGES, self.config.get("languages") or {})
+        return [label for code, pack in sorted(packs.items()) if not code.startswith("_")
+                for label in (pack.get("apply_labels") or [])]
 
     def profile(self) -> dict[str, Any]:
         return _read_json(self.root / "profile.json")

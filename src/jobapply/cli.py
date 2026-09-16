@@ -65,29 +65,28 @@ def init(
 
 @app.command()
 def new(
-    company: Optional[str] = typer.Option(None, "--company", "-c", help="Company name."),
-    role: Optional[str] = typer.Option(None, "--role", "-r", help="Role / job title."),
-    posting_url: Optional[str] = typer.Option(None, "--posting", "-p", help="URL of the Posting (job description)."),
-    form_url: Optional[str] = typer.Option(None, "--form", "-f", help="URL of the Form (where you apply)."),
-    language: Optional[str] = typer.Option(None, "--lang", "-l", help="Language code (default from config)."),
+    posting_url: Optional[str] = typer.Argument(None, help="URL of the Posting (job description)."),
+    company: Optional[str] = typer.Option(None, "--company", "-c", help="Company name (skips the prompt)."),
+    role: Optional[str] = typer.Option(None, "--role", "-r", help="Role / job title (skips the prompt)."),
+    form_url: Optional[str] = typer.Option(None, "--form", "-f", help="URL of the Form (skips the prompt)."),
+    language: Optional[str] = typer.Option(None, "--lang", "-l", help="Language code (skips the prompt)."),
     workspace: Optional[Path] = WorkspaceOpt,
 ):
-    """Create an Application. Asks for anything not given as an option."""
+    """Create an Application from a Posting URL: fetches the page, proposes company, role and
+    form URL for you to confirm, and saves the Snapshot."""
+    from .posting import new_application
+
     try:
         ws = _ws(workspace)
-        company = company or _ask("Company")
-        role = role or _ask("Role / job title")
         posting_url = posting_url or _ask("Posting URL (job description)")
-        form_url = form_url or _ask("Form URL (where you apply)", default=posting_url)
-        language = language or _ask("Language of the documents", default=ws.default_language)
-        application = Application.create(
-            ws, company=company, role=role, language=language,
-            posting_url=posting_url, form_url=form_url,
+        typer.echo("Fetching the posting …")
+        application = new_application(
+            ws, posting_url, _ask, company=company, role=role, form_url=form_url, language=language,
         )
     except JobapplyError as exc:
         _fail(exc)
-    typer.echo(f"Created {application.folder}")
-    typer.echo(f"Next: jobapply fetch {application.slug}")
+    typer.echo(f"Created {application.folder} (snapshot saved)")
+    typer.echo(f"Next: jobapply run {application.slug}")
 
 
 @app.command()

@@ -7,6 +7,16 @@ from jobapply.application import Application
 from jobapply.workspace import Workspace
 
 
+# A Posting page with JSON-LD and an apply link, shared by the posting and `new` tests.
+POSTING_HTML = """<html><head><script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"Organization"},{"@type":"JobPosting","title":"Data Scientist",
+"identifier":{"@type":"PropertyValue","name":"Acme","value":"REQ-1"},"hiringOrganization":{"name":"Acme AG"},
+"jobLocation":{"address":{"streetAddress":"Weg 1","postalCode":"8000","addressLocality":"Zürich","addressCountry":"CH"}},
+"description":"<p>Hi</p>"}]}</script></head>
+<body><nav>x</nav><main><h1>Data Scientist</h1><p>Intro</p><ul><li>Python</li></ul>
+<a href="mailto:hr@acme.ch">Bewerben</a><a href="/apply/1">Jetzt bewerben</a></main></body></html>"""
+
+
 @pytest.fixture
 def workspace(tmp_path: Path) -> Workspace:
     ws = Workspace.init(tmp_path / "ws")
