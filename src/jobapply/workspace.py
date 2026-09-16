@@ -115,6 +115,11 @@ class Workspace:
     def language(self, code: str) -> Language:
         return Language(code, self.config.get("languages"))
 
+    def is_home_country(self, country: str) -> bool:
+        """Whether a Posting's country is the applicant's own, in any spelling config.json lists."""
+        spellings = self.config.get("home_country") or ["CH", "Schweiz", "Switzerland"]
+        return country.strip().lower() in {s.lower() for s in spellings}
+
     def editor_command(self) -> list[str]:
         """How to open a file for editing: config "editor" (e.g. "code -r"), else the desktop default."""
         return shlex.split(self.config.get("editor") or "xdg-open")

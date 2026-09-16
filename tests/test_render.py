@@ -90,3 +90,17 @@ def test_unknown_register_fails_loudly(application):
     application.cover_letter_path.write_text(json.dumps(letter), encoding="utf-8")
     with pytest.raises(JobapplyError, match="register"):
         build_context(application)
+
+
+def test_letter_omits_the_home_country_in_the_address(application):
+    _write_letter(application)
+    posting = application.posting()
+    posting["address"].update({"street": "Weg 1", "postal_code": "8000", "city": "Zürich", "country": "CH"})
+    application.save_posting(posting)
+    html = render_html(application, "cover-letter.html", build_context(application))
+    assert "8000 Zürich" in html and ">CH<" not in html
+
+    posting["address"].update({"city": "Berlin", "country": "Deutschland"})
+    application.save_posting(posting)
+    html = render_html(application, "cover-letter.html", build_context(application))
+    assert ">Deutschland<" in html

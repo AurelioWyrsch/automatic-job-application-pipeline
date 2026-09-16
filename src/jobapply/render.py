@@ -54,6 +54,8 @@ def build_context(app: Application) -> dict[str, Any]:
     ws = app.workspace
     profile = lang.resolve(app.profile(), "profile")
     posting = lang.resolve(app.posting(), "posting")
+    if ws.is_home_country(posting["address"].get("country", "")):
+        posting["address"]["country"] = ""  # a domestic letter never names the country
     letter = app.cover_letter()
     fixed_name = f"cover-letter.{lang.code}.json"
     fixed = resolve_register(ws.cover_letter_fixed(lang.code), letter.get("register") or "formal", fixed_name)
