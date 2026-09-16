@@ -47,9 +47,18 @@ def open_for_editing(app: Application, what: str) -> Path:
     path = app.editable(what)
     command = app.workspace.editor_command() + [str(path)]
     try:
-        subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        proc = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
     except OSError as exc:
         raise JobapplyError(f"Could not run {' '.join(command)}: {exc}") from exc
+    # Editors like `code -r` hand the file to a running window and exit at once; a
+    # terminal editor or a failing command is still running or has failed by now.
+    try:
+        _, stderr = proc.communicate(timeout=3)
+    except subprocess.TimeoutExpired:
+        return path
+    if proc.returncode:
+        raise JobapplyError(f"{' '.join(command)} failed: {(stderr or '').strip() or f'exit code {proc.returncode}'}\n"
+                            f"Set \"editor\" in {app.workspace.root / 'config.json'} to a command that opens a file, e.g. \"code -r\".")
     return path
 
 
