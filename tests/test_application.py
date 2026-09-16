@@ -22,3 +22,12 @@ def test_slug_is_cut_at_a_word_boundary():
     assert slugify("Corealis Consulting AG") == "corealis-consulting-ag"
     assert slugify("Working Student – Data, Infrastructure & Integrations and/or AI/ML Application Development") == "working-student-data-infrastructure"
     assert len(slugify("x" * 100)) == 40
+
+
+def test_undo_last_step_walks_backwards(application):
+    import json
+    application.cover_letter_path.write_text(json.dumps({"draft": False, "subject": "s", "intro": ["x"], "body": []}))
+    assert [s.name for s in application.steps() if s.done] == ["new", "letter"]
+    assert application.undo_last_step() == "letter"
+    assert [s.name for s in application.steps() if s.done] == ["new"]
+    assert application.undo_last_step() is None

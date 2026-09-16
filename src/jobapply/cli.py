@@ -181,6 +181,31 @@ def run(
 
 
 @app.command()
+def back(
+    ref: str = typer.Argument(..., help="Application slug (or unique part of it)."),
+    workspace: Optional[Path] = WorkspaceOpt,
+):
+    """Undo the last completed step (fill -> scan -> render -> letter -> fetch) so `run` repeats it."""
+    try:
+        application = Application.find(_ws(workspace), ref)
+        step = application.undo_last_step()
+    except JobapplyError as exc:
+        _fail(exc)
+    if step is None:
+        typer.echo("Nothing to undo: only `new` is done.")
+        return
+    explanation = {
+        "fill": "cleared the filled marker; the form will be filled again",
+        "scan": "removed form-fields.json; the form will be scanned again",
+        "render": "removed the PDFs in out/; they will be rendered again",
+        "letter": 'set "draft": true in cover-letter.json; edit it and set draft to false again',
+        "fetch": "removed the snapshot; the posting will be fetched again (posting.json kept)",
+    }[step]
+    typer.echo(f"Undid {step}: {explanation}.")
+    typer.echo(f"Continue with: jobapply run {application.slug}")
+
+
+@app.command()
 def status(
     ref: Optional[str] = typer.Argument(None, help="Application slug; omit for all."),
     workspace: Optional[Path] = WorkspaceOpt,

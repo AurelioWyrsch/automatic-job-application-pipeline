@@ -226,18 +226,51 @@ class Application:
         docs = self.document_paths()
         letter = self.cover_letter()
         letter_written = not letter.get("draft") and bool(letter.get("intro") or letter.get("body"))
+        if letter.get("draft"):
+            letter_detail = 'cover-letter.json still has "draft": true'
+        elif not letter_written:
+            letter_detail = "cover-letter.json has no intro/body paragraphs"
+        else:
+            letter_detail = ""
         field_map = self.field_map()
         pages = field_map.get("pages", [])
         filled = any(p.get("filled_at") for p in pages)
         return [
             Step("new", True, self.data.get("created", "")),
             Step("fetch", self.snapshot_html.exists(), "snapshot saved" if self.snapshot_html.exists() else ""),
-            Step("letter", letter_written, "" if letter_written else "cover-letter.json still draft/empty"),
+            Step("letter", letter_written, letter_detail),
             Step("render", all(p.exists() for p in docs.values()),
                  ", ".join(p.name for p in docs.values() if p.exists())),
             Step("scan", bool(pages), f"{sum(len(p.get('fields', [])) for p in pages)} fields" if pages else ""),
             Step("fill", filled, max((p.get("filled_at") or "" for p in pages), default="")),
         ]
+
+
+    def undo_last_step(self) -> str | None:
+        """Remove the artifact of the most recently completed step so `run` repeats it.
+        Returns the step name, or None when only `new` is done."""
+        done = [s.name for s in self.steps() if s.done and s.name != "new"]
+        if not done:
+            return None
+        step = done[-1]
+        if step == "fill":
+            field_map = self.field_map()
+            for page in field_map.get("pages", []):
+                page["filled_at"] = None
+            self.save_field_map(field_map)
+        elif step == "scan":
+            self.field_map_path.unlink(missing_ok=True)
+        elif step == "render":
+            for path in self.document_paths().values():
+                path.unlink(missing_ok=True)
+        elif step == "letter":
+            letter = self.cover_letter()
+            letter["draft"] = True
+            write_json(self.cover_letter_path, letter)
+        elif step == "fetch":
+            self.snapshot_html.unlink(missing_ok=True)
+            self.snapshot_md.unlink(missing_ok=True)
+        return step
 
 
 ATTACHMENT_KIND_ORDER = ["reference", "diploma", "transcript", "certificate"]

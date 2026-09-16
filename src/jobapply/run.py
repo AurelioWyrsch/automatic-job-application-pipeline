@@ -72,6 +72,7 @@ def run(app: Application) -> None:
     from .posting import fetch_posting
     from .render import render_application
 
+    last_blocker: Optional[str] = None
     while True:
         steps = {s.name: s for s in app.steps()}
         typer.echo("")
@@ -85,12 +86,15 @@ def run(app: Application) -> None:
 
         if not steps["letter"].done:
             typer.echo("Step 3/6  your turn: complete the posting and write the letter")
+            if last_blocker == "letter":
+                typer.secho(f"  still not ready: {steps['letter'].detail}", fg=typer.colors.YELLOW)
             typer.echo(f"  {app.posting_path}")
             typer.echo(f"  {app.cover_letter_path}   (set \"draft\": false when done)")
             typer.echo(f"  In Claude Code: /extract-posting {app.slug}  then  /draft-cover-letter {app.slug}")
             answer = _prompt("Press Enter when the letter is ready, q to pause here.", "Enter/q", "c")
             if answer == "q":
                 return
+            last_blocker = "letter"
             continue
 
         if not steps["render"].done:
