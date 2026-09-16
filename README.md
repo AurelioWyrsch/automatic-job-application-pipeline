@@ -78,7 +78,7 @@ Every ATS is different. Expect the first scan on a new platform to miss a few la
 The judgment steps are handled by three skills in `.agents/skills/`, written for any coding agent that reads `SKILL.md` files (Claude Code finds them via `.claude/skills/`; other agents read them from `.agents/skills/` or as plain instructions). Each takes an application slug:
 
 - `extract-posting` — completes `posting.json` from the snapshot (contact, address, requirements)
-- `draft-cover-letter` — drafts `intro`/`body` in `cover-letter.json`, leaves `draft: true` for you
+- `draft-cover-letter` — asks you about the few skills the posting hinges on, then drafts `intro`/`body` in `cover-letter.json` as plain prose (sets `register`, leaves `draft: true`) and opens it in your editor
 - `map-fields` — resolves unmatched fields in `form-fields.json` and teaches the Synonym Table
 
 In Claude Code that's `/extract-posting <slug>` etc. The CLI itself contains no LLM and needs no API key; see `docs/adr/0001`.

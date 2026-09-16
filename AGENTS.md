@@ -12,7 +12,7 @@ CLI job-application pipeline; a human always presses submit. Vocabulary in `CONT
 Agent-neutral skills live in `.agents/skills/<name>/SKILL.md` (`.claude/skills/` symlinks there for Claude Code). The three that belong to this tool, each taking an application slug:
 
 - `extract-posting` — complete `posting.json` from the fetched snapshot
-- `draft-cover-letter` — draft the specific half of the cover letter into `cover-letter.json`
+- `draft-cover-letter` — ask about the key skills, then draft the specific half of the cover letter into `cover-letter.json`
 - `map-fields` — resolve unmatched fields in `form-fields.json` and extend the Synonym Table
 
 Agents without a skill mechanism: read the SKILL.md and follow it as instructions.
