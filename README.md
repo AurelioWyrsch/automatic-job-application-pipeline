@@ -6,6 +6,10 @@ A command-line job-application pipeline. Your data lives in one JSON profile; th
 
 ## How it works
 
+The short way: `jobapply run` asks for the two URLs, then does every automatic step and pauses wherever you need to act (write the letter, check the PDFs, review the form). Quit at any pause; `jobapply run <slug>` resumes there.
+
+The individual steps, if you prefer to drive them yourself:
+
 ```
 jobapply new     --company "Acme AG" --role "Data Scientist" --posting <url> --form <url> --lang de
 jobapply fetch   <slug>     # saves a snapshot of the posting, extracts what it can into posting.json

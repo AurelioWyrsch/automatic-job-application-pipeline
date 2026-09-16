@@ -165,6 +165,22 @@ def fill(
 
 
 @app.command()
+def run(
+    ref: Optional[str] = typer.Argument(None, help="Application slug; omit to pick one or start a new one."),
+    workspace: Optional[Path] = WorkspaceOpt,
+):
+    """Walk an Application through every step, pausing wherever you need to act. Re-run to resume."""
+    from .run import choose_application, run as run_pipeline
+
+    try:
+        ws = _ws(workspace)
+        application = Application.find(ws, ref) if ref else choose_application(ws, _ask)
+        run_pipeline(application)
+    except JobapplyError as exc:
+        _fail(exc)
+
+
+@app.command()
 def status(
     ref: Optional[str] = typer.Argument(None, help="Application slug; omit for all."),
     workspace: Optional[Path] = WorkspaceOpt,
