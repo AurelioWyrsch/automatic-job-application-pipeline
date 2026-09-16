@@ -4,7 +4,7 @@ description: Fill an Application's posting.json from its fetched Snapshot.
 disable-model-invocation: true
 ---
 
-Complete `posting.json` for the Application named in `$ARGUMENTS` from its Snapshot. File formats: [docs/data-files.md](../../../docs/data-files.md).
+Complete `posting.json` for the Application named in the request (`$ARGUMENTS` in Claude Code) from its Snapshot. File formats: [docs/data-files.md](../../../docs/data-files.md).
 
 1. Locate the Application folder (`jobapply list` if the slug is partial). Read `snapshot.md`; fall back to `snapshot.html` only for facts the text version lost (addresses in footers, contact blocks).
 2. Read the current `posting.json`. Keep every field the applicant already filled; fill only empty ones.

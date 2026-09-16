@@ -90,7 +90,7 @@ def run(app: Application) -> None:
                 typer.secho(f"  still not ready: {steps['letter'].detail}", fg=typer.colors.YELLOW)
             typer.echo(f"  {app.posting_path}")
             typer.echo(f"  {app.cover_letter_path}   (set \"draft\": false when done)")
-            typer.echo(f"  In Claude Code: /extract-posting {app.slug}  then  /draft-cover-letter {app.slug}")
+            typer.echo(f"  With your agent: /extract-posting {app.slug}  then  /draft-cover-letter {app.slug}")
             answer = _prompt("Press Enter when the letter is ready, q to pause here.", "Enter/q", "c")
             if answer == "q":
                 return
@@ -119,7 +119,7 @@ def run(app: Application) -> None:
             start = "fill" if steps["scan"].done else "scan"
             typer.echo(f"Step 5/6  {start}: opening the form in Chrome …")
             if start == "scan":
-                typer.echo(f"  After the scan, fix unmatched fields in {app.field_map_path.name} (or /map-fields {app.slug}), then choose [f].")
+                typer.echo(f"  After the scan, fix unmatched fields in {app.field_map_path.name} (or the map-fields skill: {app.slug}), then choose [f].")
             form_session(app, start_with=start)
             if not any(s.done for s in app.steps() if s.name == "fill"):
                 answer = _prompt("Form not filled yet. Enter to reopen the browser, q to pause.", "Enter/q", "c")

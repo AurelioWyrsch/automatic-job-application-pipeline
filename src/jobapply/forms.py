@@ -268,7 +268,7 @@ def _do_scan(page, app: Application) -> None:
     for f in unmatched:
         typer.echo(f"  · {f.get('label') or f.get('name') or f['selector']:40.40s}    ({f['matched_by']})")
     typer.echo(f"Field map written to {app.field_map_path}")
-    typer.echo("Edit the \"value\" of unmatched fields (or run /map-fields), then choose [f] to fill.")
+    typer.echo("Edit the \"value\" of unmatched fields (or run the map-fields skill), then choose [f] to fill.")
 
 
 def _do_fill(page, app: Application) -> None:

@@ -4,7 +4,7 @@ description: Draft the specific half of an Application's cover letter into cover
 disable-model-invocation: true
 ---
 
-Draft the job-specific half of the cover letter for the Application named in `$ARGUMENTS`. File formats: [docs/data-files.md](../../../docs/data-files.md).
+Draft the job-specific half of the cover letter for the Application named in the request (`$ARGUMENTS` in Claude Code). File formats: [docs/data-files.md](../../../docs/data-files.md).
 
 1. Locate the Application folder. Read `application.json`, `posting.json`, `snapshot.md`, the Workspace `profile.json`, and `cover-letter.<lang>.json` (the fixed half: know what it already says so you write around it, not over it).
 2. Write in the Application's language. Match register to the Posting: formal Sie/"Dear" unless the Posting itself is informal. Use the applicant's own facts from `profile.json`; invent nothing.

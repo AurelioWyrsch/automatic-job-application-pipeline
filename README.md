@@ -28,9 +28,9 @@ jobapply run
 |---|---|---|
 | new | you | `run` asks for company, role, posting URL, form URL, language |
 | fetch | tool | saves a snapshot of the posting (HTML + readable text) and extracts what it can into `posting.json` |
-| letter | you | complete `posting.json`, write the job-specific half of the letter in `cover-letter.json`, set `"draft": false` — by hand or with `/extract-posting` and `/draft-cover-letter` in Claude Code |
+| letter | you | complete `posting.json`, write the job-specific half of the letter in `cover-letter.json`, set `"draft": false` — by hand or with the `extract-posting` and `draft-cover-letter` skills |
 | render | tool | CV, cover letter and a merged PDF with all attachments into `out/`; offers to open them |
-| scan | tool + you | opens the form in Chrome, detects every field, guesses what goes where, writes `form-fields.json`; you fix what it missed (or `/map-fields`) |
+| scan | tool + you | opens the form in Chrome, detects every field, guesses what goes where, writes `form-fields.json`; you fix what it missed (or the `map-fields` skill) |
 | fill | tool | fills the fields and uploads the files, then leaves the browser open |
 | submit | you | review the form and press the button |
 
@@ -72,15 +72,15 @@ Fields are matched by two deterministic signals: the HTML `autocomplete` attribu
 
 Every ATS is different. Expect the first scan on a new platform to miss a few labels — add them to `field-synonyms.json` (or let `/map-fields` do it) and the next application on that platform goes smoother. Cross-origin iframes cannot be scanned; that's a browser limit.
 
-## Claude Code
+## Agent skills
 
-The repo ships three skills that operate on the files the CLI leaves for you:
+The judgment steps are handled by three skills in `.agents/skills/`, written for any coding agent that reads `SKILL.md` files (Claude Code finds them via `.claude/skills/`; other agents read them from `.agents/skills/` or as plain instructions). Each takes an application slug:
 
-- `/extract-posting <slug>` — completes `posting.json` from the snapshot (contact, address, requirements)
-- `/draft-cover-letter <slug>` — drafts `intro`/`body` in `cover-letter.json`, leaves `draft: true` for you
-- `/map-fields <slug>` — resolves unmatched fields in `form-fields.json` and teaches the Synonym Table
+- `extract-posting` — completes `posting.json` from the snapshot (contact, address, requirements)
+- `draft-cover-letter` — drafts `intro`/`body` in `cover-letter.json`, leaves `draft: true` for you
+- `map-fields` — resolves unmatched fields in `form-fields.json` and teaches the Synonym Table
 
-The CLI itself contains no LLM and needs no API key; see `docs/adr/0001`.
+In Claude Code that's `/extract-posting <slug>` etc. The CLI itself contains no LLM and needs no API key; see `docs/adr/0001`.
 
 ## Vocabulary and decisions
 

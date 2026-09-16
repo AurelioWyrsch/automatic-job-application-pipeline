@@ -4,7 +4,7 @@ description: Resolve unmatched fields in an Application's form-fields.json and t
 disable-model-invocation: true
 ---
 
-Complete the Field Map for the Application named in `$ARGUMENTS`. Target syntax and file formats: [docs/data-files.md](../../../docs/data-files.md).
+Complete the Field Map for the Application named in the request (`$ARGUMENTS` in Claude Code). Target syntax and file formats: [docs/data-files.md](../../../docs/data-files.md).
 
 1. Locate the Application folder. Read `form-fields.json`, the Workspace `profile.json`, `posting.json`, `application.json` and `field-synonyms.json`.
 2. For every field whose `value` is `null`, decide from its `label`, `hints`, `placeholder`, `name`, `id`, `type` and `options`:

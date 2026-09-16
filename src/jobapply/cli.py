@@ -109,7 +109,7 @@ def fetch(
     else:
         typer.echo("No structured JobPosting data on the page; posting.json left for you to complete.")
     typer.echo(f"Next: complete {application.posting_path.name} and write {application.cover_letter_path.name} "
-               f"(by hand or with /extract-posting and /draft-cover-letter), then: jobapply render {application.slug}")
+               f"(by hand or with the extract-posting / draft-cover-letter skills), then: jobapply render {application.slug}")
 
 
 @app.command()
