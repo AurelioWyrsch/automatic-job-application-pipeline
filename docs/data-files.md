@@ -1,6 +1,6 @@
 # Data files an Application is made of
 
-Workspace root: `$JOBAPPLY_WORKSPACE`, else `./workspace`. Applications live in `<workspace>/applications/<slug>/`; `jobapply list` prints the slugs and `jobapply status <slug>` shows which steps are done.
+Workspace root: `--workspace`, else `$JOBAPPLY_WORKSPACE`, else `./workspace`. Applications live in `<workspace>/applications/<slug>/`; `jobapply list` prints the slugs and `jobapply status <slug>` shows which steps are done.
 
 | File | Written by | Purpose |
 |---|---|---|
@@ -10,6 +10,21 @@ Workspace root: `$JOBAPPLY_WORKSPACE`, else `./workspace`. Applications live in 
 | `cover-letter.json` | applicant | The specific half of the letter: `draft` (must be `false` before render), `subject`, `salutation` (empty = built from `posting.contact` via `salutation_named` in `cover-letter.<lang>.json`, or `salutation_default` when no contact is known), `intro` (paragraphs, markdown), `body` (paragraphs, markdown). Letter order: `intro` → fixed `about_me` → `body` → fixed `closing` |
 | `form-fields.json` | `jobapply scan`, applicant | The Field Map: `pages[]`, each with `url` and `fields[]`. A field's `value` says what to fill; `null` means skip |
 | `out/` | `jobapply render` | The PDFs |
+
+## How progress is derived
+
+There is no state file. `jobapply status`, `run` and `back` read the folder:
+
+| Step | done when |
+|---|---|
+| new | `application.json` exists |
+| fetch | `snapshot.html` exists |
+| letter | `cover-letter.json` has `"draft": false` and at least one paragraph in `intro` or `body` |
+| render | all three PDFs exist in `out/` |
+| scan | `form-fields.json` has at least one page |
+| fill | a page in `form-fields.json` has `filled_at` set |
+
+`jobapply back <slug>` reverses the last completed step by removing exactly that artifact (for `letter` it sets `draft` back to `true`; for `fetch` it keeps `posting.json`).
 
 ## Field `value` targets
 
