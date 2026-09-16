@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<title>{{ documents.cover_letter }} {{ profile.first_name }} {{ profile.last_name }}</title>
+<style>{% include "style.css" %}</style>
+</head>
+<body class="letter">
+{% set c = profile.contact %}
+{% set a = posting.address %}
+{% set contact = posting.contact %}
+
+{% set topline = [profile.first_name ~ " " ~ profile.last_name, c.street, (c.postal_code ~ " " ~ c.city) | trim, c.phone, c.email] | select | list %}
+<div class="topline sender">
+  {% for item in topline %}
+  <span>{{ item }}</span>{% if not loop.last %}<span class="sep">|</span>{% endif %}
+  {% endfor %}
+</div>
+
+<div class="recipient">
+  {% if a.company_line or posting.company %}<div>{{ a.company_line or posting.company }}</div>{% endif %}
+  {% if contact.first_name or contact.last_name %}<div>{{ contact.salutation }} {{ contact.first_name }} {{ contact.last_name }}</div>{% endif %}
+  {% if a.street %}<div>{{ a.street }}</div>{% endif %}
+  {% if a.postal_code or a.city %}<div>{{ a.postal_code }} {{ a.city }}</div>{% endif %}
+  {% if a.country %}<div>{{ a.country }}</div>{% endif %}
+</div>
+
+<div class="place-date">{{ c.city }}, {{ today }}</div>
+
+<div class="subject">{{ letter.subject }}</div>
+
+<div class="body">
+  <p>{{ salutation }}</p>
+  {% for para in letter.intro %}{{ para | md }}{% endfor %}
+  {% for para in fixed.about_me %}{{ para | md }}{% endfor %}
+  {% for para in letter.body %}{{ para | md }}{% endfor %}
+  {% for para in fixed.closing %}{{ para | md }}{% endfor %}
+</div>
+
+<div class="signoff">
+  <p>{{ fixed.sign_off }}</p>
+  <div class="signature">
+    {% if signature %}<img src="{{ signature }}" alt="">{% endif %}
+    <div>{{ profile.first_name }} {{ profile.last_name }}</div>
+  </div>
+</div>
+
+{% if enclosures %}
+<div class="enclosures">
+  <strong>{{ fixed.enclosures_label }}</strong>
+  <ul>{% for e in enclosures %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+</body>
+</html>

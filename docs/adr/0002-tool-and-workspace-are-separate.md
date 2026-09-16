@@ -1,0 +1,3 @@
+# The tool is public; all personal data lives in a separate Workspace
+
+The tool is published on GitHub, but it operates on highly personal data (Profile, photo, Attachments, Applications, a logged-in browser profile). The CLI therefore never assumes data next to its own code: it reads a Workspace directory (default `./workspace/`, overridable) holding `config.json`, `profile.json`, `attachments/`, `applications/` and `.browser/`. Default Templates ship with the tool and can be overridden from `workspace/templates/`. The Workspace is git-ignored in the tool repo and may be its own private repository; the tool repo ships an example Workspace with fictional data instead.

@@ -1,0 +1,264 @@
+"""An Application: one attempt at one job, living in its own folder.
+
+Files inside ``applications/<slug>/``:
+
+    application.json   urls, company, role, language, selected attachments, profile overrides
+    snapshot.html      the Posting as fetched (raw DOM)
+    snapshot.md        the Posting as readable text
+    posting.json       facts extracted from the Posting, completed by the applicant
+    cover-letter.json  the specific half of the Cover Letter
+    form-fields.json   the Field Map
+    out/               rendered PDFs
+"""
+
+from __future__ import annotations
+
+import re
+import unicodedata
+from dataclasses import dataclass
+from datetime import date, datetime
+from pathlib import Path
+from typing import Any
+
+from .errors import JobapplyError
+from .i18n import Language, deep_merge
+from .workspace import Workspace, _read_json, write_json
+
+EMPTY_POSTING: dict[str, Any] = {
+    "company": "",
+    "role": "",
+    "reference": "",
+    "location": "",
+    "workload": "",
+    "contact": {"salutation": "", "first_name": "", "last_name": "", "email": "", "phone": ""},
+    "address": {"company_line": "", "street": "", "postal_code": "", "city": "", "country": ""},
+    "requirements": [],
+    "description": "",
+}
+
+EMPTY_COVER_LETTER: dict[str, Any] = {
+    "draft": True,
+    "subject": "",
+    "salutation": "",
+    "intro": [],
+    "body": [],
+}
+
+
+def slugify(text: str, max_length: int = 40) -> str:
+    """ASCII, lower-case, dash-separated, cut at a word boundary so folder names stay readable."""
+    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+    text = re.sub(r"[^a-zA-Z0-9]+", "-", text).strip("-").lower()
+    if len(text) > max_length:
+        text = text[:max_length].rsplit("-", 1)[0] or text[:max_length]
+    return text or "x"
+
+
+@dataclass
+class Step:
+    name: str
+    done: bool
+    detail: str = ""
+
+
+class Application:
+    def __init__(self, workspace: Workspace, folder: Path):
+        self.workspace = workspace
+        self.folder = folder
+        if not self.json_path.exists():
+            raise JobapplyError(f"{folder} has no application.json")
+        self.data: dict[str, Any] = _read_json(self.json_path)
+
+    # -- lookup / creation -------------------------------------------------------
+
+    @classmethod
+    def create(
+        cls,
+        workspace: Workspace,
+        *,
+        company: str,
+        role: str,
+        language: str,
+        posting_url: str,
+        form_url: str,
+    ) -> "Application":
+        workspace.language(language)  # validates the language exists
+        slug = f"{date.today().isoformat()}-{slugify(company)}-{slugify(role)}"
+        folder = workspace.applications_dir / slug
+        if folder.exists():
+            raise JobapplyError(f"Application folder already exists: {folder}")
+        folder.mkdir(parents=True)
+        data = {
+            "company": company,
+            "role": role,
+            "language": language,
+            "posting_url": posting_url,
+            "form_url": form_url,
+            "created": date.today().isoformat(),
+            "status": "open",
+            "attachments": [entry["file"] for entry in workspace.attachments_manifest()],
+            "profile_overrides": {},
+        }
+        write_json(folder / "application.json", data)
+        posting = deep_merge(EMPTY_POSTING, {"company": company, "role": role})
+        write_json(folder / "posting.json", posting)
+        write_json(folder / "cover-letter.json", dict(EMPTY_COVER_LETTER))
+        return cls(workspace, folder)
+
+    @classmethod
+    def find(cls, workspace: Workspace, ref: str) -> "Application":
+        """Find an Application by exact slug or by a unique substring of it."""
+        apps_dir = workspace.applications_dir
+        exact = apps_dir / ref
+        if exact.is_dir():
+            return cls(workspace, exact)
+        candidates = [p for p in cls.list_folders(workspace) if ref.lower() in p.name.lower()]
+        if len(candidates) == 1:
+            return cls(workspace, candidates[0])
+        if not candidates:
+            raise JobapplyError(f"No application matches {ref!r} in {apps_dir}")
+        names = "\n  ".join(p.name for p in candidates)
+        raise JobapplyError(f"{ref!r} is ambiguous, matches:\n  {names}")
+
+    @staticmethod
+    def list_folders(workspace: Workspace) -> list[Path]:
+        if not workspace.applications_dir.exists():
+            return []
+        return sorted(
+            p for p in workspace.applications_dir.iterdir()
+            if p.is_dir() and (p / "application.json").exists()
+        )
+
+    # -- paths ----------------------------------------------------------------------
+
+    @property
+    def slug(self) -> str:
+        return self.folder.name
+
+    @property
+    def json_path(self) -> Path:
+        return self.folder / "application.json"
+
+    @property
+    def snapshot_html(self) -> Path:
+        return self.folder / "snapshot.html"
+
+    @property
+    def snapshot_md(self) -> Path:
+        return self.folder / "snapshot.md"
+
+    @property
+    def posting_path(self) -> Path:
+        return self.folder / "posting.json"
+
+    @property
+    def cover_letter_path(self) -> Path:
+        return self.folder / "cover-letter.json"
+
+    @property
+    def field_map_path(self) -> Path:
+        return self.folder / "form-fields.json"
+
+    @property
+    def out_dir(self) -> Path:
+        return self.folder / "out"
+
+    # -- data -----------------------------------------------------------------------
+
+    @property
+    def language_code(self) -> str:
+        return self.data.get("language") or self.workspace.default_language
+
+    @property
+    def language(self) -> Language:
+        return self.workspace.language(self.language_code)
+
+    def save(self) -> None:
+        write_json(self.json_path, self.data)
+
+    def profile(self) -> dict[str, Any]:
+        """The Profile with this Application's overrides applied (not yet language-resolved)."""
+        return deep_merge(self.workspace.profile(), self.data.get("profile_overrides") or {})
+
+    def posting(self) -> dict[str, Any]:
+        if not self.posting_path.exists():
+            return dict(EMPTY_POSTING)
+        return deep_merge(EMPTY_POSTING, _read_json(self.posting_path))
+
+    def save_posting(self, data: dict[str, Any]) -> None:
+        write_json(self.posting_path, data)
+
+    def cover_letter(self) -> dict[str, Any]:
+        if not self.cover_letter_path.exists():
+            return dict(EMPTY_COVER_LETTER)
+        return deep_merge(EMPTY_COVER_LETTER, _read_json(self.cover_letter_path))
+
+    def field_map(self) -> dict[str, Any]:
+        if not self.field_map_path.exists():
+            return {"pages": []}
+        return _read_json(self.field_map_path)
+
+    def save_field_map(self, data: dict[str, Any]) -> None:
+        write_json(self.field_map_path, data)
+
+    def selected_attachments(self) -> list[dict[str, Any]]:
+        """Manifest entries selected for this Application, in upload/merge order."""
+        manifest = {e["file"]: e for e in self.workspace.attachments_manifest()}
+        selected = []
+        for name in self.data.get("attachments") or []:
+            if name not in manifest:
+                raise JobapplyError(
+                    f"application.json lists attachment {name!r} which is not in attachments/manifest.json"
+                )
+            selected.append(manifest[name])
+        return sort_attachments(selected)
+
+    def document_paths(self) -> dict[str, Path]:
+        """Paths of the rendered documents by kind: cv, cover_letter, merged."""
+        lang = self.language
+        profile = self.workspace.profile()
+        first, last = profile.get("first_name", ""), profile.get("last_name", "")
+        return {kind: self.out_dir / lang.filename(kind, first, last) for kind in ("cv", "cover_letter", "merged")}
+
+    # -- progress -------------------------------------------------------------------
+
+    def steps(self) -> list[Step]:
+        docs = self.document_paths()
+        letter = self.cover_letter()
+        letter_written = not letter.get("draft") and bool(letter.get("intro") or letter.get("body"))
+        field_map = self.field_map()
+        pages = field_map.get("pages", [])
+        filled = any(p.get("filled_at") for p in pages)
+        return [
+            Step("new", True, self.data.get("created", "")),
+            Step("fetch", self.snapshot_html.exists(), "snapshot saved" if self.snapshot_html.exists() else ""),
+            Step("letter", letter_written, "" if letter_written else "cover-letter.json still draft/empty"),
+            Step("render", all(p.exists() for p in docs.values()),
+                 ", ".join(p.name for p in docs.values() if p.exists())),
+            Step("scan", bool(pages), f"{sum(len(p.get('fields', [])) for p in pages)} fields" if pages else ""),
+            Step("fill", filled, max((p.get("filled_at") or "" for p in pages), default="")),
+        ]
+
+
+ATTACHMENT_KIND_ORDER = ["reference", "diploma", "transcript", "certificate"]
+
+
+def sort_attachments(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Order: Arbeitszeugnisse newest first, then diplomas, transcripts, certificates, then the rest."""
+    def key(entry: dict[str, Any]):
+        kind = entry.get("kind", "")
+        rank = ATTACHMENT_KIND_ORDER.index(kind) if kind in ATTACHMENT_KIND_ORDER else len(ATTACHMENT_KIND_ORDER)
+        return (rank, _neg_date(entry.get("date")))
+    return sorted(entries, key=key)
+
+
+def _neg_date(iso: str | None) -> str:
+    """Sort key so newer dates come first; missing dates go last."""
+    if not iso:
+        return "~"
+    padded = iso + "-01" * (2 - iso.count("-"))
+    try:
+        d = datetime.strptime(padded, "%Y-%m-%d")
+    except ValueError as exc:
+        raise JobapplyError(f"Bad date in attachments manifest: {iso!r}") from exc
+    return str(10**8 - int(d.strftime("%Y%m%d")))

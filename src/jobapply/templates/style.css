@@ -1,0 +1,91 @@
+/* Shared print styles for CV and cover letter. Override by copying to workspace/templates/style.css */
+@page {
+  size: A4;
+  margin: 18mm 20mm 18mm 20mm;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: "Liberation Sans", Arial, Helvetica, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.35;
+  color: #1a1a1a;
+}
+a { color: inherit; text-decoration: none; }
+p { margin: 0 0 0.6em 0; }
+ul { margin: 0.2em 0 0 1.1em; padding: 0; }
+li { margin: 0 0 0.15em 0; }
+
+/* --- header ------------------------------------------------------------- */
+.topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 9pt;
+  color: #333;
+  border-bottom: 1px solid #999;
+  padding-bottom: 0.5em;
+  margin-bottom: 1.6em;
+}
+.topline span { white-space: nowrap; }
+.topline .sep { color: #999; }
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2em;
+  margin-bottom: 1.8em;
+}
+.head .text { flex: 1; }
+.head h1 { font-size: 20pt; margin: 0 0 0.9em 0; }
+.head .summary { text-align: justify; }
+.head .photo {
+  width: 40mm;
+  height: auto;          /* keep the photo's own aspect ratio, never crop */
+  flex: 0 0 auto;
+}
+.details {
+  font-size: 9.5pt;
+  margin-top: 0.8em;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.1em 1em;
+}
+.details dt { color: #555; }
+.details dd { margin: 0; }
+
+/* --- sections ---------------------------------------------------------- */
+section { margin-bottom: 1.4em; break-inside: auto; }
+h2 {
+  font-size: 11pt;
+  margin: 0 0 0.5em 0;
+  padding-bottom: 0.2em;
+  border-bottom: 1px solid #1a1a1a;
+}
+.entry {
+  display: grid;
+  grid-template-columns: 38mm 1fr;
+  gap: 0 1em;
+  margin-bottom: 0.7em;
+  break-inside: avoid;
+}
+.entry .when { color: #333; }
+.entry .org { font-weight: bold; }
+.entry .role { }
+.entry ul { margin-top: 0.15em; }
+.skills .entry, .languages .entry { margin-bottom: 0.25em; }
+.skills .entry .when, .languages .entry .when { color: #1a1a1a; }
+
+/* --- cover letter --------------------------------------------------------- */
+.letter .sender { margin-bottom: 2.5em; }
+.letter .recipient { margin-bottom: 2.5em; min-height: 5em; }
+.letter .place-date { margin-bottom: 2em; }
+.letter .subject { font-weight: bold; margin-bottom: 1.2em; }
+.letter .body p { text-align: justify; margin-bottom: 0.9em; }
+.letter .body ul { margin-bottom: 0.9em; }
+.letter .signoff { margin-top: 1.5em; }
+.letter .signature img { height: 16mm; display: block; margin: 0.6em 0 0.2em 0; }
+.letter .enclosures { margin-top: 2.5em; font-size: 9.5pt; }
+.letter .enclosures ul { list-style: none; margin: 0.2em 0 0 0; }

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<title>{{ documents.cv }} {{ profile.first_name }} {{ profile.last_name }}</title>
+<style>{% include "style.css" %}</style>
+</head>
+<body class="cv">
+{% set c = profile.contact %}
+{% set p = profile.personal | default({}) %}
+
+{% set topline = [profile.first_name ~ " " ~ profile.last_name, c.street, (c.postal_code ~ " " ~ c.city) | trim, c.phone, c.email] | select | list %}
+<div class="topline">
+  {% for item in topline %}
+  <span>{{ item }}</span>{% if not loop.last %}<span class="sep">|</span>{% endif %}
+  {% endfor %}
+</div>
+
+<div class="head">
+  <div class="text">
+    <h1>{{ profile.first_name }} {{ profile.last_name }}</h1>
+    {% if profile.summary %}<p class="summary">{{ profile.summary }}</p>{% endif %}
+    <dl class="details">
+      {% if p.birth_date %}<dt>{{ labels.birth_date }}</dt><dd>{{ p.birth_date | long_date }}</dd>{% endif %}
+      {% if p.nationality %}<dt>{{ labels.nationality }}</dt><dd>{{ p.nationality }}</dd>{% endif %}
+      {% if p.permit %}<dt>{{ labels.permit }}</dt><dd>{{ p.permit }}</dd>{% endif %}
+      {% if c.portfolio %}<dt>{{ labels.portfolio }}</dt><dd><a href="{{ c.portfolio }}">{{ c.portfolio | replace("https://", "") }}</a></dd>{% endif %}
+      {% if c.linkedin %}<dt>{{ labels.linkedin }}</dt><dd><a href="{{ c.linkedin }}">{{ c.linkedin | replace("https://", "") }}</a></dd>{% endif %}
+      {% if c.github %}<dt>{{ labels.github }}</dt><dd><a href="{{ c.github }}">{{ c.github | replace("https://", "") }}</a></dd>{% endif %}
+    </dl>
+  </div>
+  {% if photo %}<img class="photo" src="{{ photo }}" alt="">{% endif %}
+</div>
+
+{% if profile.experience %}
+<section class="experience">
+  <h2>{{ labels.experience }}</h2>
+  {% for job in profile.experience %}
+  <div class="entry">
+    <div class="when">{{ job | date_range }}</div>
+    <div>
+      <div class="org">{{ job.employer }}{% if job.location %} {{ job.location }}{% endif %}</div>
+      <div class="role">{{ job.title }}{% if job.workload %} ({{ job.workload }} %){% endif %}</div>
+      {% if job.bullets %}<ul>{% for b in job.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if profile.education %}
+<section class="education">
+  <h2>{{ labels.education }}</h2>
+  {% for edu in profile.education %}
+  <div class="entry">
+    <div class="when">{{ edu | date_range }}</div>
+    <div>
+      <div class="org">{{ edu.institution }}{% if edu.location %} {{ edu.location }}{% endif %}</div>
+      <div class="role">{{ edu.degree }}</div>
+      {% if edu.bullets %}<ul>{% for b in edu.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if profile.skills %}
+<section class="skills">
+  <h2>{{ labels.skills }}</h2>
+  {% for group in profile.skills %}
+  <div class="entry">
+    <div class="when">{{ group.group }}</div>
+    <div>{{ group["items"] | join(", ") }}</div>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if profile.languages %}
+<section class="languages">
+  <h2>{{ labels.languages }}</h2>
+  {% for l in profile.languages %}
+  <div class="entry">
+    <div class="when">{{ l.name }}</div>
+    <div>{{ l.level }}</div>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if profile.certifications %}
+<section class="certifications">
+  <h2>{{ labels.certifications }}</h2>
+  {% for cert in profile.certifications %}
+  <div class="entry">
+    <div class="when">{{ cert.date | month_year }}</div>
+    <div><span class="org">{{ cert.name }}</span>{% if cert.issuer %}, {{ cert.issuer }}{% endif %}</div>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if profile.interests %}
+<section class="interests">
+  <h2>{{ labels.interests }}</h2>
+  <p>{{ profile.interests }}</p>
+</section>
+{% endif %}
+</body>
+</html>

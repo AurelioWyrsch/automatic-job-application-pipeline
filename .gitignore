@@ -1,0 +1,16 @@
+# Personal data never enters the public repo
+workspace/
+*.browser/
+.browser/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# Scratch
+/tmp/
