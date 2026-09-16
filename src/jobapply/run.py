@@ -7,6 +7,7 @@ any pause and running the command again resumes at the same place.
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 from typing import Optional
 
 import typer
@@ -37,6 +38,23 @@ def _open(path) -> None:
         subprocess.Popen(["xdg-open", str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except OSError:
         typer.echo(f"  open manually: {path}")
+
+
+def open_for_editing(app: Application, what: str) -> Path:
+    """Open one of the Application's files in the applicant's editor; returns the path."""
+    import subprocess
+
+    path = app.editable(what)
+    command = app.workspace.editor_command() + [str(path)]
+    try:
+        subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except OSError as exc:
+        raise JobapplyError(f"Could not run {' '.join(command)}: {exc}") from exc
+    return path
+
+
+def _progress(app: Application) -> str:
+    return "  ".join(("✔ " if s.done else "· ") + s.name for s in app.steps())
 
 
 def choose_application(ws: Workspace, ask: Ask, download: Download | None = None) -> Application:
@@ -82,28 +100,35 @@ def run(app: Application) -> None:
         steps = {s.name: s for s in app.steps()}
         typer.echo("")
         typer.secho(f"── {app.slug}", fg=typer.colors.BLUE)
+        typer.echo(f"   {_progress(app)}")
 
         if not steps["fetch"].done:
-            typer.echo("Step 2/6  fetch: downloading the posting …")
+            typer.echo("fetch: downloading the posting …")
             result = fetch_posting(app)
             typer.echo(f"  snapshot saved; extracted: {', '.join(result.extracted) or 'nothing structured'}")
             continue
 
         if not steps["letter"].done:
-            typer.echo("Step 3/6  your turn: complete the posting and write the letter")
+            typer.echo("letter — your turn: complete the posting and write the letter")
             if last_blocker == "letter":
                 typer.secho(f"  still not ready: {steps['letter'].detail}", fg=typer.colors.YELLOW)
             typer.echo(f"  {app.posting_path}")
-            typer.echo(f"  {app.cover_letter_path}   (set \"draft\": false when done)")
+            typer.echo(f"  {app.cover_letter_path}")
             typer.echo(f"  With your agent: /extract-posting {app.slug}  then  /draft-cover-letter {app.slug}")
-            answer = _prompt("Press Enter when the letter is ready, q to pause here.", "Enter/q", "c")
+            answer = _prompt("Enter to re-check, e to open the letter in your editor, d when the letter is done, q to pause.",
+                             "Enter/e/d/q", "c")
             if answer == "q":
                 return
+            if answer == "e":
+                open_for_editing(app, "letter")
+                continue
+            if answer == "d":
+                app.mark_letter_done()
             last_blocker = "letter"
             continue
 
         if not steps["render"].done:
-            typer.echo("Step 4/6  render: producing the PDFs …")
+            typer.echo("render: producing the PDFs …")
             for kind, path in render_application(app).items():
                 typer.echo(f"  {kind:13s} {path.name}")
             answer = _prompt("Open the PDFs to check them?", "y/n/q", "y")
@@ -122,7 +147,7 @@ def run(app: Application) -> None:
 
         if not steps["fill"].done:
             start = "fill" if steps["scan"].done else "scan"
-            typer.echo(f"Step 5/6  {start}: opening the form in Chrome …")
+            typer.echo(f"{start}: opening the form in Chrome …")
             if start == "scan":
                 typer.echo(f"  After the scan, fix unmatched fields in {app.field_map_path.name} (or the map-fields skill: {app.slug}), then choose [f].")
             form_session(app, start_with=start)
@@ -132,5 +157,5 @@ def run(app: Application) -> None:
                     return
             continue
 
-        typer.secho("Step 6/6  all steps done — the form was filled; submitting is yours.", fg=typer.colors.GREEN)
+        typer.secho("all steps done — the form was filled; submitting is yours.", fg=typer.colors.GREEN)
         return

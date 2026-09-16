@@ -28,7 +28,7 @@ jobapply run
 |---|---|---|
 | new | you | `run` asks for the posting URL, fetches it and proposes company, role and form URL (from the page's JSON-LD, title or apply link); you confirm or correct them and choose the language |
 | fetch | tool | saves a snapshot of the posting (HTML + readable text) and extracts what it can into `posting.json` — done together with `new`; `jobapply fetch` re-fetches |
-| letter | you | complete `posting.json`, write the job-specific half of the letter in `cover-letter.json`, set `"draft": false` — by hand or with the `extract-posting` and `draft-cover-letter` skills |
+| letter | you | complete `posting.json`, write the job-specific half of the letter in `cover-letter.json` — by hand or with the `extract-posting` and `draft-cover-letter` skills; `[e]` opens the letter in your editor, `[d]` marks it done |
 | render | tool | CV, cover letter and a merged PDF with all attachments into `out/`; offers to open them |
 | scan | tool + you | opens the form in Chrome, detects every field, guesses what goes where, writes `form-fields.json`; you fix what it missed (or the `map-fields` skill) |
 | fill | tool | fills the fields and uploads the files, then leaves the browser open |
@@ -36,7 +36,7 @@ jobapply run
 
 Quit at any pause with `q`; `jobapply run <slug>` resumes at the same step, because progress is read from the files in the application folder. `jobapply back <slug>` undoes the last completed step. `jobapply status` shows every application.
 
-Each step also exists as its own command (`new`, `fetch`, `render`, `scan`, `fill`) if you'd rather drive them yourself; `jobapply --help` lists them. `jobapply new <posting-url>` is all it takes to start one; `--company`, `--role`, `--form` and `--lang` skip the corresponding prompt. Any unique part of a slug works as the argument, e.g. `jobapply run acme`.
+Each step also exists as its own command (`new`, `fetch`, `render`, `scan`, `fill`) if you'd rather drive them yourself; `jobapply --help` lists them. `jobapply open <slug> [letter|posting|fields|folder]` opens a file in your editor (`"editor"` in `config.json`, e.g. `"code -r"`). `jobapply new <posting-url>` is all it takes to start one; `--company`, `--role`, `--form` and `--lang` skip the corresponding prompt. Any unique part of a slug works as the argument, e.g. `jobapply run acme`.
 
 `scan` and `fill` act on whatever page the browser is showing and can be repeated, so multi-page forms are handled page by page (`[s]` scan, `[f]` fill, `[q]` quit inside the session). The browser profile is persistent, so a login survives between runs.
 
@@ -50,6 +50,7 @@ workspace/
   profile.json             you: contact, personal details, summary, experience, education, skills, languages, certifications, interests
   photo.jpg                optional photo used on the CV (path set in profile.json)
   cover-letter.de.json     the half of the cover letter that is the same for every job, per language
+                           (values may be {"formal": …, "informal": …} for Sie/Du; the application's register picks one)
   cover-letter.en.json
   field-synonyms.json      form labels → profile fields; add a label whenever scan misses one
   attachments/             PDFs to upload with every application + manifest.json (kind, date, title)

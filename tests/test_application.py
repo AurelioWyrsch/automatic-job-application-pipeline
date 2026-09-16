@@ -31,3 +31,18 @@ def test_undo_last_step_walks_backwards(application):
     assert application.undo_last_step() == "letter"
     assert [s.name for s in application.steps() if s.done] == ["new"]
     assert application.undo_last_step() is None
+
+
+def test_mark_letter_done_completes_the_letter_step(application):
+    import json
+    application.cover_letter_path.write_text(json.dumps({"draft": True, "subject": "s", "intro": ["x"], "body": []}))
+    application.mark_letter_done()
+    assert [s.name for s in application.steps() if s.done] == ["new", "letter"]
+    assert application.cover_letter()["intro"] == ["x"]
+
+
+def test_editable_paths(application):
+    assert application.editable("letter") == application.cover_letter_path
+    assert application.editable("posting") == application.posting_path
+    assert application.editable("fields") == application.field_map_path
+    assert application.editable("folder") == application.folder

@@ -14,7 +14,7 @@ from pypdf import PdfWriter
 
 from .application import Application
 from .errors import JobapplyError
-from .i18n import Language
+from .i18n import Language, resolve_register
 from .workspace import Workspace, package_file
 
 
@@ -55,7 +55,9 @@ def build_context(app: Application) -> dict[str, Any]:
     profile = lang.resolve(app.profile(), "profile")
     posting = lang.resolve(app.posting(), "posting")
     letter = app.cover_letter()
-    fixed = lang.resolve(ws.cover_letter_fixed(lang.code), f"cover-letter.{lang.code}.json")
+    fixed_name = f"cover-letter.{lang.code}.json"
+    fixed = resolve_register(ws.cover_letter_fixed(lang.code), letter.get("register") or "formal", fixed_name)
+    fixed = lang.resolve(fixed, fixed_name)
     attachments = [lang.resolve(e, "attachments") for e in app.selected_attachments()]
     enclosures = [lang.document_title("cv"), lang.document_title("cover_letter")]
     enclosures += [e.get("title") or e["file"] for e in attachments]

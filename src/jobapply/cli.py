@@ -179,6 +179,22 @@ def run(
         _fail(exc)
 
 
+@app.command("open")
+def open_cmd(
+    ref: str = typer.Argument(..., help="Application slug (or unique part of it)."),
+    what: str = typer.Argument("letter", help="letter | posting | fields | folder"),
+    workspace: Optional[Path] = WorkspaceOpt,
+):
+    """Open one of the Application's files in your editor (config.json "editor", e.g. "code -r")."""
+    from .run import open_for_editing
+
+    try:
+        path = open_for_editing(Application.find(_ws(workspace), ref), what)
+    except JobapplyError as exc:
+        _fail(exc)
+    typer.echo(f"Opened {path}")
+
+
 @app.command()
 def back(
     ref: str = typer.Argument(..., help="Application slug (or unique part of it)."),

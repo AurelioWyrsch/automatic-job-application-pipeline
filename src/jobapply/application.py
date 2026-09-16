@@ -38,6 +38,7 @@ EMPTY_POSTING: dict[str, Any] = {
 
 EMPTY_COVER_LETTER: dict[str, Any] = {
     "draft": True,
+    "register": "formal",
     "subject": "",
     "salutation": "",
     "intro": [],
@@ -178,6 +179,14 @@ class Application:
     def out_dir(self) -> Path:
         return self.folder / "out"
 
+    def editable(self, what: str) -> Path:
+        """The file `jobapply open` shows for a short name: letter, posting, fields or folder."""
+        paths = {"letter": self.cover_letter_path, "posting": self.posting_path,
+                 "fields": self.field_map_path, "folder": self.folder}
+        if what not in paths:
+            raise JobapplyError(f"Nothing called {what!r} to open; use one of {', '.join(paths)}")
+        return paths[what]
+
     # -- data -----------------------------------------------------------------------
 
     @property
@@ -207,6 +216,12 @@ class Application:
         if not self.cover_letter_path.exists():
             return dict(EMPTY_COVER_LETTER)
         return deep_merge(EMPTY_COVER_LETTER, _read_json(self.cover_letter_path))
+
+    def mark_letter_done(self) -> None:
+        """The applicant declares the specific half finished: `draft` becomes false."""
+        letter = self.cover_letter()
+        letter["draft"] = False
+        write_json(self.cover_letter_path, letter)
 
     def field_map(self) -> dict[str, Any]:
         if not self.field_map_path.exists():

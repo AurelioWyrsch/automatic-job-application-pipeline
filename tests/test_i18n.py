@@ -39,3 +39,11 @@ def test_unknown_language_needs_config():
                                 "date_month_year": "{month:02d}/{year}", "date_long": "{day} {month_name} {year}",
                                 "documents": {"cv": "CV"}, "filenames": {"cv": "CV_{first}{last}.pdf"}}})
     assert fr.month_year("2025-03") == "03/2025"
+
+
+def test_editor_command_from_config(tmp_path):
+    from jobapply.workspace import Workspace
+    ws = Workspace.init(tmp_path / "ws")
+    assert ws.editor_command() == ["xdg-open"]
+    ws.config["editor"] = "code -r"
+    assert ws.editor_command() == ["code", "-r"]

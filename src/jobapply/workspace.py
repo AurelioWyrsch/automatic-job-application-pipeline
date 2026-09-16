@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import shutil
 from importlib import resources
 from pathlib import Path
@@ -113,6 +114,10 @@ class Workspace:
 
     def language(self, code: str) -> Language:
         return Language(code, self.config.get("languages"))
+
+    def editor_command(self) -> list[str]:
+        """How to open a file for editing: config "editor" (e.g. "code -r"), else the desktop default."""
+        return shlex.split(self.config.get("editor") or "xdg-open")
 
     def apply_labels(self) -> list[str]:
         """Link texts that lead from a Posting to its Form, across every known Language
