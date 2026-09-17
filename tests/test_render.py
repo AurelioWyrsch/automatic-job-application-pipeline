@@ -37,6 +37,15 @@ def test_cover_letter_html(application):
     assert "Beilagen" not in html and "Zeugnis B" not in html  # no enclosure list (ADR 0003)
 
 
+def test_intro_and_about_me_share_one_paragraph(application):
+    _write_letter(application)
+    fixed = json.loads((application.workspace.root / "cover-letter.de.json").read_text(encoding="utf-8"))
+    first_about_me = fixed["about_me"][0]
+    ctx = build_context(application)
+    html = render_html(application, "cover-letter.html", ctx)
+    assert f"<p>Erster Absatz mit <strong>fett</strong>. {first_about_me}</p>" in html
+
+
 def test_english_application_uses_english_labels(workspace):
     from jobapply.application import Application
     app = Application.create(workspace, company="Acme", role="Analyst", language="en",

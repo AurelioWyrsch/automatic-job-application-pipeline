@@ -31,8 +31,10 @@
 
 <div class="body">
   <p>{{ salutation }}</p>
-  {% for para in letter.intro %}{{ para | md }}{% endfor %}
-  {% for para in fixed.about_me %}{{ para | md }}{% endfor %}
+  {# The opening sentence(s) and the first fixed about_me paragraph form one paragraph. #}
+  {% set opening = (letter.intro + fixed.about_me[:1]) | join(" ") %}
+  {% if opening %}{{ opening | md }}{% endif %}
+  {% for para in fixed.about_me[1:] %}{{ para | md }}{% endfor %}
   {% for para in letter.body %}{{ para | md }}{% endfor %}
   {% for para in fixed.closing %}{{ para | md }}{% endfor %}
 </div>
