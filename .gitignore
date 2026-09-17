@@ -14,3 +14,7 @@ dist/
 
 # Scratch
 /tmp/
+
+# stray downloads in the repo root (the example photo lives under src/)
+/*.pdf
+/*.png
