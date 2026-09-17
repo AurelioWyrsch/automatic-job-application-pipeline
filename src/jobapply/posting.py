@@ -195,7 +195,8 @@ def propose(html: str, posting_url: str, apply_labels: list[str]) -> Proposal:
     """Derive company, role and the apply link from a Posting page, deterministically.
 
     JSON-LD ``JobPosting`` first; otherwise the page title and ``<h1>``. The Form
-    URL is the first anchor whose text is an apply label, else the Posting URL.
+    URL is the first anchor whose text is an apply label, else the Posting URL. An
+    apply link that is a ``mailto:`` (no web Form) is kept as such, but a web link wins.
     """
     proposal = Proposal(form_url=posting_url)
     facts: dict[str, Any] = {}
@@ -240,13 +241,16 @@ def _label_key(text: str) -> str:
 
 def _apply_link(soup: BeautifulSoup, apply_labels: list[str]) -> str:
     labels = {_label_key(label) for label in apply_labels}
+    mailto = ""
     for anchor in soup.find_all("a", href=True):
         href = str(anchor["href"]).strip()
-        if href.lower().startswith(("mailto:", "javascript:", "#")):
+        if href.lower().startswith(("javascript:", "#")):
             continue
         if _label_key(anchor.get_text(" ", strip=True)) in labels:
-            return href
-    return ""
+            if not href.lower().startswith("mailto:"):
+                return href
+            mailto = mailto or "mailto:" + href[len("mailto:"):].split("?", 1)[0]
+    return mailto
 
 
 def _downloader(workspace: Workspace) -> Download:
@@ -303,6 +307,8 @@ def new_application(
     posting = app.posting()
     posting["company"] = proposal.company or company
     posting["role"] = proposal.role or role
+    if app.applies_by_email and not posting["contact"].get("email"):
+        posting["contact"]["email"] = app.application_email
     app.save_posting(posting)
     store_snapshot(app, posting_url, html)
     return app

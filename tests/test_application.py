@@ -57,3 +57,16 @@ def test_waived_cover_letter_skips_the_letter_step(application):
     assert sorted(application.document_paths()) == ["cv", "merged"]
     # nothing to reverse for the letter: back stops at `new`
     assert application.undo_last_step() is None
+
+
+def test_by_email_application_has_an_email_step_instead_of_scan_and_fill(application):
+    application.data["form_url"] = "mailto:hr@acme.ch?subject=x"
+    application.save()
+    assert application.application_email == "hr@acme.ch"
+    assert [s.name for s in application.steps()] == ["new", "fetch", "letter", "render", "email"]
+    application.email_path.write_text("To: hr@acme.ch\n")
+    steps = {s.name: s for s in application.steps()}
+    assert steps["email"].done and "hr@acme.ch" in steps["email"].detail
+    assert application.undo_last_step() == "email"
+    assert not application.email_path.exists()
+    assert application.editable("email") == application.email_path

@@ -261,6 +261,9 @@ def form_session(app: Application, start_with: str) -> None:
     url = app.data.get("form_url")
     if not url:
         raise JobapplyError("application.json has no form_url")
+    if app.applies_by_email:
+        raise JobapplyError(f"{app.slug} applies by email ({app.application_email}); there is no form to {start_with}. "
+                            f"Use: jobapply email {app.slug}")
     with sync_playwright() as p:
         context = persistent_context(p, app.workspace, headless=False)
         page = context.pages[0] if context.pages else context.new_page()

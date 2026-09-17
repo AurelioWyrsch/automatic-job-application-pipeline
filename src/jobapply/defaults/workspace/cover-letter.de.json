@@ -1,5 +1,5 @@
 {
-  "_comment": "The fixed half of every German cover letter. Markdown allowed. The specific half lives in applications/<slug>/cover-letter.json. Order in the letter: letter.intro, fixed.about_me, letter.body, fixed.closing. Subject: cover-letter.json's own \"subject\" wins; otherwise subject_with_reference when posting.reference is set, else subject_default. Salutation: cover-letter.json's own \"salutation\" wins; otherwise salutation_named[posting.contact.salutation] (\"_\" when the title is unknown) with {salutation} {first_name} {last_name}; otherwise salutation_default.",
+  "_comment": "The fixed half of every German cover letter. Markdown allowed. The specific half lives in applications/<slug>/cover-letter.json. Order in the letter: letter.intro, fixed.about_me, letter.body, fixed.closing. Subject: cover-letter.json's own \"subject\" wins; otherwise subject_with_reference when posting.reference is set, else subject_default. Salutation: cover-letter.json's own \"salutation\" wins; otherwise salutation_named[posting.contact.salutation] (\"_\" when the title is unknown) with {salutation} {first_name} {last_name}; otherwise salutation_default. email_body: the paragraphs of the covering email when the employer takes applications by email (form_url mailto:); placeholders {role}, {company}, {reference}.",
   "subject_default": "Bewerbung als {role}",
   "subject_with_reference": "Bewerbung als {role}, Referenz {reference}",
   "salutation_default": "Sehr geehrte Damen und Herren",
@@ -14,5 +14,9 @@
   "closing": [
     "Ich freue mich, Sie in einem persönlichen Gespräch kennenzulernen."
   ],
-  "sign_off": "Freundliche Grüsse"
+  "sign_off": "Freundliche Grüsse",
+  "email_body": [
+    "Gerne bewerbe ich mich als {role}. Mein Motivationsschreiben, Lebenslauf und Zeugnisse finden Sie im Anhang.",
+    "Ich freue mich von Ihnen zu hören."
+  ]
 }

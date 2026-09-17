@@ -113,6 +113,7 @@ def choose_application(ws: Workspace, ask: Ask, download: Download | None = None
 
 def run(app: Application) -> None:
     from .forms import form_session
+    from .mail import open_mail_client, write_email
     from .posting import fetch_posting
     from .render import render_application
 
@@ -167,6 +168,22 @@ def run(app: Application) -> None:
                     for path in app.document_paths().values():
                         path.unlink(missing_ok=True)
             continue
+
+        if app.applies_by_email:
+            if not steps["email"].done:
+                typer.echo(f"email: composing the message to {app.application_email} …")
+                email = write_email(app)
+                typer.echo(f"  saved {app.email_path.name}\n")
+                typer.echo("  " + email.as_markdown().replace("\n", "\n  "))
+                answer = _prompt("Open it in your mail client? (attach the Dossier yourself, then send)", "y/n/q", "y")
+                if answer == "q":
+                    return
+                if answer == "y":
+                    open_mail_client(email)
+                continue
+            typer.secho("all steps done — the email is composed; attaching the Dossier and sending is yours.",
+                        fg=typer.colors.GREEN)
+            return
 
         if not steps["fill"].done:
             start = "fill" if steps["scan"].done else "scan"

@@ -68,7 +68,7 @@ def new(
     posting_url: Optional[str] = typer.Argument(None, help="URL of the Posting (job description)."),
     company: Optional[str] = typer.Option(None, "--company", "-c", help="Company name (skips the prompt)."),
     role: Optional[str] = typer.Option(None, "--role", "-r", help="Role / job title (skips the prompt)."),
-    form_url: Optional[str] = typer.Option(None, "--form", "-f", help="URL of the Form (skips the prompt)."),
+    form_url: Optional[str] = typer.Option(None, "--form", "-f", help="URL of the Form, or mailto:<address> when applying by email (skips the prompt)."),
     language: Optional[str] = typer.Option(None, "--lang", "-l", help="Language code (skips the prompt)."),
     workspace: Optional[Path] = WorkspaceOpt,
 ):
@@ -132,7 +132,8 @@ def render(
         _fail(exc)
     for kind, path in produced.items():
         typer.echo(f"{kind:13s} {path}")
-    typer.echo(f"Next: check the PDFs, then: jobapply scan {application.slug}")
+    nxt = "email" if application.applies_by_email else "scan"
+    typer.echo(f"Next: check the PDFs, then: jobapply {nxt} {application.slug}")
 
 
 @app.command()
@@ -163,6 +164,27 @@ def fill(
         form_session(application, start_with="fill")
     except JobapplyError as exc:
         _fail(exc)
+
+
+@app.command()
+def email(
+    ref: str = typer.Argument(..., help="Application slug (or unique part of it)."),
+    send: bool = typer.Option(True, "--open/--no-open", help="Hand the message to your mail client."),
+    workspace: Optional[Path] = WorkspaceOpt,
+):
+    """Compose the application email (form_url is a mailto:) into email.md and open it in your
+    mail client. You attach the Dossier and press send."""
+    from .mail import open_mail_client, write_email
+
+    try:
+        application = Application.find(_ws(workspace), ref)
+        message = write_email(application)
+        if send:
+            open_mail_client(message)
+    except JobapplyError as exc:
+        _fail(exc)
+    typer.echo(message.as_markdown())
+    typer.echo(f"Saved {application.email_path}. Attach the Dossier, check the text, send.")
 
 
 @app.command()
@@ -199,7 +221,7 @@ def login(
 @app.command("open")
 def open_cmd(
     ref: str = typer.Argument(..., help="Application slug (or unique part of it)."),
-    what: str = typer.Argument("letter", help="letter | posting | fields | folder"),
+    what: str = typer.Argument("letter", help="letter | posting | fields | email | folder"),
     workspace: Optional[Path] = WorkspaceOpt,
 ):
     """Open one of the Application's files in your editor (config.json "editor", e.g. "code -r")."""
@@ -217,7 +239,7 @@ def back(
     ref: str = typer.Argument(..., help="Application slug (or unique part of it)."),
     workspace: Optional[Path] = WorkspaceOpt,
 ):
-    """Undo the last completed step (fill -> scan -> render -> letter -> fetch) so `run` repeats it."""
+    """Undo the last completed step (fill -> scan | email -> render -> letter -> fetch) so `run` repeats it."""
     try:
         application = Application.find(_ws(workspace), ref)
         step = application.undo_last_step()
@@ -227,6 +249,7 @@ def back(
         typer.echo("Nothing to undo: only `new` is done.")
         return
     explanation = {
+        "email": "removed email.md; the email will be composed again",
         "fill": "cleared the filled marker; the form will be filled again",
         "scan": "removed form-fields.json; the form will be scanned again",
         "render": "removed the PDFs in out/; they will be rendered again",

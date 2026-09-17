@@ -1,5 +1,5 @@
 {
-  "_comment": "The fixed half of every English cover letter. Markdown allowed. The specific half lives in applications/<slug>/cover-letter.json. Order in the letter: letter.intro, fixed.about_me, letter.body, fixed.closing. Subject: cover-letter.json's own \"subject\" wins; otherwise subject_with_reference when posting.reference is set, else subject_default. Salutation: cover-letter.json's own \"salutation\" wins; otherwise salutation_named[posting.contact.salutation] (\"_\" when the title is unknown) with {salutation} {first_name} {last_name}; otherwise salutation_default.",
+  "_comment": "The fixed half of every English cover letter. Markdown allowed. The specific half lives in applications/<slug>/cover-letter.json. Order in the letter: letter.intro, fixed.about_me, letter.body, fixed.closing. Subject: cover-letter.json's own \"subject\" wins; otherwise subject_with_reference when posting.reference is set, else subject_default. Salutation: cover-letter.json's own \"salutation\" wins; otherwise salutation_named[posting.contact.salutation] (\"_\" when the title is unknown) with {salutation} {first_name} {last_name}; otherwise salutation_default. email_body: the paragraphs of the covering email when the employer takes applications by email (form_url mailto:); placeholders {role}, {company}, {reference}.",
   "subject_default": "Application for the position of {role}",
   "subject_with_reference": "Application for the position of {role}, ref. {reference}",
   "salutation_default": "Dear Sir or Madam,",
@@ -16,5 +16,9 @@
   "closing": [
     "I would be delighted to discuss my application with you in person."
   ],
-  "sign_off": "Kind regards"
+  "sign_off": "Kind regards",
+  "email_body": [
+    "I would like to apply for the position of {role}. Please find my cover letter, CV and references attached.",
+    "I look forward to hearing from you."
+  ]
 }

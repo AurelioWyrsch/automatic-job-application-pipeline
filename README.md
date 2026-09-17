@@ -36,7 +36,7 @@ jobapply run
 
 Quit at any pause with `q`; `jobapply run <slug>` resumes at the same step, because progress is read from the files in the application folder. `jobapply back <slug>` undoes the last completed step. `jobapply status` shows every application, with what still blocks `render` (an empty required field) and what convention warns about.
 
-Each step also exists as its own command (`new`, `fetch`, `render`, `scan`, `fill`) if you'd rather drive them yourself; `jobapply --help` lists them. `jobapply open <slug> [letter|posting|fields|folder]` opens a file in your editor (`"editor"` in `config.json`, e.g. `"code -r"`). `jobapply new <posting-url>` is all it takes to start one; `--company`, `--role`, `--form` and `--lang` skip the corresponding prompt. Any unique part of a slug works as the argument, e.g. `jobapply run acme`.
+Each step also exists as its own command (`new`, `fetch`, `render`, `scan`, `fill`, `email`) if you'd rather drive them yourself; `jobapply --help` lists them. `jobapply open <slug> [letter|posting|fields|email|folder]` opens a file in your editor (`"editor"` in `config.json`, e.g. `"code -r"`). `jobapply new <posting-url>` is all it takes to start one; `--company`, `--role`, `--form` and `--lang` skip the corresponding prompt. Any unique part of a slug works as the argument, e.g. `jobapply run acme`.
 
 `scan` and `fill` act on whatever page the browser is showing and can be repeated, so multi-page forms are handled page by page (`[s]` scan, `[f]` fill, `[q]` quit inside the session). The browser profile is persistent, so a login survives between runs.
 
@@ -76,6 +76,8 @@ workspace/
 Fields are matched by two deterministic signals: the HTML `autocomplete` attribute, and the Synonym Table in `field-synonyms.json` (labels per language, matched as whole words; longest match wins). File inputs get `document:cv`, `document:cover_letter`, `attachments:all` (multi-file) or `document:merged` (the Dossier, for a single "documents" slot). Checkboxes, radios and questions like salary or start date are left for you: set their `value` in `form-fields.json` (`literal:…`) or answer them in the browser.
 
 **Sites that need a login** (LinkedIn postings, an ATS behind single sign-on): run `jobapply login` once — it opens the workspace's own Chrome profile on LinkedIn's login page (`jobapply login <url>` for another site), you log in, press Enter. Fetching and form filling both use that profile, so the session carries over; the tool never sees or stores your credentials. A fetch that lands on a login page fails with a hint instead of saving an empty snapshot.
+
+**Applications by email.** When the posting's apply button is a `mailto:` link, `new` proposes that address as the form URL (`"form_url": "mailto:hr@acme.ch"`; set it by hand for a posting that only prints the address). Such an application has no scan and fill; `email` composes the covering message — subject and salutation as on the letter, the `email_body` paragraphs from `cover-letter.<lang>.json`, your name and phone — into `email.md`, hands it to your mail client and names the Dossier to attach. Attaching and sending stay yours.
 
 Every ATS is different. Expect the first scan on a new platform to miss a few labels — add them to `field-synonyms.json` (or let `/map-fields` do it) and the next application on that platform goes smoother. Cross-origin iframes cannot be scanned; that's a browser limit.
 

@@ -17,7 +17,7 @@ The public web page describing the job. Source of company name, role title, refe
 _Avoid_: job description site, job ad, listing
 
 **Form**:
-The web page where the Application is actually submitted. May live on a different domain than the Posting and may sit behind a login.
+The web page where the Application is actually submitted. May live on a different domain than the Posting and may sit behind a login. An employer that takes applications by email has no Form; the Application then names the address (`mailto:`) and is sent as an email with the Dossier attached.
 _Avoid_: job application site, ATS page, portal
 
 **Attachment**:

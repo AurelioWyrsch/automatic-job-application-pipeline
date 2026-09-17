@@ -78,3 +78,12 @@ def test_run_offers_to_continue_an_existing_application(workspace):
     assert chosen.slug == existing.slug
     assert ask.seen[f"Continue {existing.slug} instead? (y/n)"] == "y"
     assert "Company" not in ask.seen
+
+
+def test_by_email_application_copies_the_address_into_the_posting_contact(workspace):
+    html = '<html><body><h1>Analyst</h1><a href="mailto:hr@acme.ch">Bewerben</a></body></html>'
+    ask = recorder({"Company": "Acme"})
+    app = new_application(workspace, URL, ask, download=lambda url: html)
+    assert ask.seen["Form URL (where you apply)"] == "mailto:hr@acme.ch"
+    assert app.applies_by_email and app.application_email == "hr@acme.ch"
+    assert app.posting()["contact"]["email"] == "hr@acme.ch"

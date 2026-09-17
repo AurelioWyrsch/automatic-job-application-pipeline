@@ -7,7 +7,8 @@ Files inside ``applications/<slug>/``:
     snapshot.md        the Posting as readable text
     posting.json       facts extracted from the Posting, completed by the applicant
     cover-letter.json  the specific half of the Cover Letter
-    form-fields.json   the Field Map
+    form-fields.json   the Field Map (Applications with a web Form)
+    email.md           the application email as composed (Applications that apply by email)
     out/               rendered PDFs
 """
 
@@ -177,13 +178,17 @@ class Application:
         return self.folder / "form-fields.json"
 
     @property
+    def email_path(self) -> Path:
+        return self.folder / "email.md"
+
+    @property
     def out_dir(self) -> Path:
         return self.folder / "out"
 
     def editable(self, what: str) -> Path:
-        """The file `jobapply open` shows for a short name: letter, posting, fields or folder."""
+        """The file `jobapply open` shows for a short name: letter, posting, fields, email or folder."""
         paths = {"letter": self.cover_letter_path, "posting": self.posting_path,
-                 "fields": self.field_map_path, "folder": self.folder}
+                 "fields": self.field_map_path, "email": self.email_path, "folder": self.folder}
         if what not in paths:
             raise JobapplyError(f"Nothing called {what!r} to open; use one of {', '.join(paths)}")
         return paths[what]
@@ -211,6 +216,19 @@ class Application:
         """The Style of the Cover Letter alone (`letter_style`); defaults to the CV's, so a coloured
         CV can go with a plain black letter."""
         return self.data.get("letter_style") or self.workspace.config.get("letter_style") or self.style
+
+    @property
+    def applies_by_email(self) -> bool:
+        """``"form_url": "mailto:..."``: the employer takes applications by email, so there is
+        no Form to scan or fill; the `email` step composes the message instead."""
+        return (self.data.get("form_url") or "").lower().startswith("mailto:")
+
+    @property
+    def application_email(self) -> str:
+        """The address a by-email Application is sent to (the mailto: without any query)."""
+        if not self.applies_by_email:
+            return ""
+        return self.data["form_url"][len("mailto:"):].split("?", 1)[0].strip()
 
     @property
     def cover_letter_waived(self) -> bool:
@@ -284,18 +302,23 @@ class Application:
             letter_detail = "cover-letter.json has no intro/body paragraphs"
         else:
             letter_detail = ""
-        field_map = self.field_map()
-        pages = field_map.get("pages", [])
-        filled = any(p.get("filled_at") for p in pages)
-        return [
+        steps = [
             Step("new", True, self.data.get("created", "")),
             Step("fetch", self.snapshot_html.exists(), "snapshot saved" if self.snapshot_html.exists() else ""),
             Step("letter", letter_written, letter_detail),
             Step("render", all(p.exists() for p in docs.values()),
                  ", ".join(p.name for p in docs.values() if p.exists())),
-            Step("scan", bool(pages), f"{sum(len(p.get('fields', [])) for p in pages)} fields" if pages else ""),
-            Step("fill", filled, max((p.get("filled_at") or "" for p in pages), default="")),
         ]
+        if self.applies_by_email:
+            composed = self.email_path.exists()
+            steps.append(Step("email", composed, f"composed for {self.application_email}" if composed else ""))
+            return steps
+        field_map = self.field_map()
+        pages = field_map.get("pages", [])
+        filled = any(p.get("filled_at") for p in pages)
+        steps.append(Step("scan", bool(pages), f"{sum(len(p.get('fields', [])) for p in pages)} fields" if pages else ""))
+        steps.append(Step("fill", filled, max((p.get("filled_at") or "" for p in pages), default="")))
+        return steps
 
 
     def undo_last_step(self) -> str | None:
@@ -307,7 +330,9 @@ class Application:
         if not done:
             return None
         step = done[-1]
-        if step == "fill":
+        if step == "email":
+            self.email_path.unlink(missing_ok=True)
+        elif step == "fill":
             field_map = self.field_map()
             for page in field_map.get("pages", []):
                 page["filled_at"] = None

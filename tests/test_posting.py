@@ -61,3 +61,15 @@ def test_login_wall_is_detected_from_the_redirect():
     assert looks_like_login_wall("https://ats.example.com/job/1", "https://ats.example.com/login?next=/job/1")
     assert not looks_like_login_wall(job, job + "/?refId=abc")          # same page, tracking added
     assert not looks_like_login_wall(job, "https://ch.linkedin.com/jobs/view/123")  # locale redirect
+
+
+def test_apply_link_may_be_a_mailto_when_no_web_form_exists():
+    html = '<html><body><a href="mailto:hr@acme.ch?subject=Job">Jetzt bewerben</a></body></html>'
+    p = propose(html, "https://x.ch/j", apply_labels=["Jetzt bewerben"])
+    assert p.form_url == "mailto:hr@acme.ch"
+
+
+def test_web_form_wins_over_mailto():
+    # POSTING_HTML offers both "Bewerben" (mailto) and "Jetzt bewerben" (/apply/1), mailto first
+    p = propose(HTML, "https://jobs.acme.ch/job/1", apply_labels=["Bewerben", "Jetzt bewerben"])
+    assert p.form_url == "https://jobs.acme.ch/apply/1"
