@@ -8,6 +8,16 @@
   },
   "editor": "xdg-open",
   "_comment_editor": "Command `jobapply open` and the [e] key in `run` use to open a file, e.g. \"code -r\" for VS Code.",
+  "profile_fields": {
+    "required": [
+      "first_name", "last_name",
+      "contact.street", "contact.postal_code", "contact.city", "contact.phone", "contact.email",
+      "personal.nationality",
+      "education", "languages"
+    ],
+    "recommended": ["photo", "personal.birth_date"]
+  },
+  "_comment_profile_fields": "Swiss convention (docs/adr/0003). Dotted paths into profile.json: required fields block `render`; recommended ones only warn. Edit for another country.",
   "home_country": [
     "CH",
     "Schweiz",

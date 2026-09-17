@@ -1,10 +1,12 @@
 {
-  "_comment": "The fixed half of every German cover letter. Markdown allowed. The specific half lives in applications/<slug>/cover-letter.json. Order in the letter: letter.intro, fixed.about_me, letter.body, fixed.closing. Salutation: cover-letter.json's own \"salutation\" wins; otherwise salutation_named[posting.contact.salutation] (\"_\" when the title is unknown) with {salutation} {first_name} {last_name}; otherwise salutation_default.",
-  "salutation_default": "Sehr geehrte Damen und Herren,",
+  "_comment": "The fixed half of every German cover letter. Markdown allowed. The specific half lives in applications/<slug>/cover-letter.json. Order in the letter: letter.intro, fixed.about_me, letter.body, fixed.closing. Subject: cover-letter.json's own \"subject\" wins; otherwise subject_with_reference when posting.reference is set, else subject_default. Salutation: cover-letter.json's own \"salutation\" wins; otherwise salutation_named[posting.contact.salutation] (\"_\" when the title is unknown) with {salutation} {first_name} {last_name}; otherwise salutation_default.",
+  "subject_default": "Bewerbung als {role}",
+  "subject_with_reference": "Bewerbung als {role}, Referenz {reference}",
+  "salutation_default": "Sehr geehrte Damen und Herren",
   "salutation_named": {
-    "Frau": "Sehr geehrte Frau {last_name},",
-    "Herr": "Sehr geehrter Herr {last_name},",
-    "_": "Guten Tag {first_name} {last_name},"
+    "Frau": "Sehr geehrte Frau {last_name}",
+    "Herr": "Sehr geehrter Herr {last_name}",
+    "_": "Guten Tag {first_name} {last_name}"
   },
   "about_me": [
     "Zurzeit absolviere ich den Master in Applied Information and Data Science an der Hochschule Luzern. Neben dem Studium arbeite ich als Werkstudentin im Bereich Data Analytics, wo ich Reports automatisiere und Dashboards für das Controlling aufbaue."
@@ -12,6 +14,5 @@
   "closing": [
     "Ich freue mich, Sie in einem persönlichen Gespräch kennenzulernen."
   ],
-  "sign_off": "Freundliche Grüsse",
-  "enclosures_label": "Beilagen"
+  "sign_off": "Freundliche Grüsse"
 }

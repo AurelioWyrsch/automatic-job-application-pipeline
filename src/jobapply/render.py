@@ -12,9 +12,10 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoes
 from markupsafe import Markup
 from pypdf import PdfWriter
 
-from .application import Application
+from .application import COVER_LETTER_WAIVED, Application
 from .errors import JobapplyError
 from .i18n import Language
+from .preflight import preflight
 from .workspace import Workspace, package_file
 
 
@@ -60,8 +61,6 @@ def build_context(app: Application) -> dict[str, Any]:
     fixed_name = f"cover-letter.{lang.code}.json"
     fixed = lang.resolve(ws.cover_letter_fixed(lang.code), fixed_name)
     attachments = [lang.resolve(e, "attachments") for e in app.selected_attachments()]
-    enclosures = [lang.document_title("cv"), lang.document_title("cover_letter")]
-    enclosures += [e.get("title") or e["file"] for e in attachments]
     return {
         "lang": lang.code,
         "profile": profile,
@@ -72,8 +71,8 @@ def build_context(app: Application) -> dict[str, Any]:
         "letter": letter,
         "fixed": fixed,
         "salutation": build_salutation(letter, fixed, posting),
+        "subject": build_subject(letter, fixed, posting),
         "attachments": attachments,
-        "enclosures": enclosures,
         "today": lang.long_date(),
         "documents": lang.pack["documents"],
         "labels": lang.pack.get("labels", {}),
@@ -96,6 +95,18 @@ def build_salutation(letter: dict[str, Any], fixed: dict[str, Any], posting: dic
                 salutation=title, first_name=(contact.get("first_name") or "").strip(), last_name=last_name,
             ).replace("  ", " ").strip()
     return fixed.get("salutation_default", "")
+
+
+def build_subject(letter: dict[str, Any], fixed: dict[str, Any], posting: dict[str, Any]) -> str:
+    """Explicit letter.subject wins; else "Bewerbung als {role}", with the reference number
+    when the Posting has one (subject_default / subject_with_reference in the fixed file)."""
+    if letter.get("subject"):
+        return letter["subject"]
+    role = (posting.get("role") or "").strip()
+    reference = (posting.get("reference") or "").strip()
+    pattern = fixed.get("subject_with_reference") if reference else None
+    pattern = pattern or fixed.get("subject_default") or "{role}"
+    return pattern.format(role=role, reference=reference).strip()
 
 
 def render_html(app: Application, template_name: str, context: dict[str, Any]) -> str:
@@ -136,15 +147,19 @@ def check_letter_ready(app: Application) -> None:
         )
     if not (letter.get("intro") or letter.get("body")):
         raise JobapplyError(f"{app.cover_letter_path} has no paragraphs in \"intro\" or \"body\".")
-    if not letter.get("subject"):
-        raise JobapplyError(f"{app.cover_letter_path} has no \"subject\".")
 
 
 def render_application(app: Application, *, only: str | None = None, keep_html: bool = False) -> dict[str, Path]:
-    """Render cv, cover_letter and merged (or just ``only``). Returns the produced paths."""
+    """Render the CV, the Cover Letter (unless waived) and the Dossier, or just ``only``.
+    Refuses while a Required Field is empty. Returns the produced paths."""
     docs = app.document_paths()
     produced: dict[str, Path] = {}
-    if only in (None, "cover_letter"):
+    report = preflight(app)
+    if report.errors:
+        raise JobapplyError("\n".join(report.errors))
+    if only == "cover_letter" and app.cover_letter_waived:
+        raise JobapplyError(COVER_LETTER_WAIVED)
+    if "cover_letter" in docs and only in (None, "cover_letter"):
         check_letter_ready(app)
     context = build_context(app)
 
@@ -156,7 +171,7 @@ def render_application(app: Application, *, only: str | None = None, keep_html: 
         html_to_pdf(html, docs["cv"])
         produced["cv"] = docs["cv"]
 
-    if only in (None, "cover_letter"):
+    if "cover_letter" in docs and only in (None, "cover_letter"):
         html = render_html(app, "cover-letter.html", context)
         if keep_html:
             (app.out_dir / "cover-letter.html").write_text(html, encoding="utf-8")
@@ -164,12 +179,20 @@ def render_application(app: Application, *, only: str | None = None, keep_html: 
         produced["cover_letter"] = docs["cover_letter"]
 
     if only in (None, "merged"):
-        for kind in ("cv", "cover_letter"):
-            if not docs[kind].exists():
-                raise JobapplyError(f"Cannot merge: {docs[kind].name} not rendered yet.")
-        parts = [docs["cv"], docs["cover_letter"]]
-        parts += [app.workspace.attachment_path(e["file"]) for e in app.selected_attachments()]
+        parts = dossier_parts(app)
+        for part in parts:
+            if part in docs.values() and not part.exists():
+                raise JobapplyError(f"Cannot merge: {part.name} not rendered yet.")
         merge_pdfs(parts, docs["merged"])
         produced["merged"] = docs["merged"]
 
     return produced
+
+
+def dossier_parts(app: Application) -> list[Path]:
+    """The Dossier in Swiss order: Cover Letter (unless waived), CV, then the selected Attachments."""
+    docs = app.document_paths()
+    parts = [docs["cover_letter"]] if "cover_letter" in docs else []
+    parts.append(docs["cv"])
+    parts += [app.workspace.attachment_path(e["file"]) for e in app.selected_attachments()]
+    return parts

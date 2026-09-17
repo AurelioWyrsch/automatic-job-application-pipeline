@@ -46,3 +46,14 @@ def test_editable_paths(application):
     assert application.editable("posting") == application.posting_path
     assert application.editable("fields") == application.field_map_path
     assert application.editable("folder") == application.folder
+
+
+def test_waived_cover_letter_skips_the_letter_step(application):
+    application.data["cover_letter"] = False
+    application.save()
+    assert application.cover_letter_waived
+    steps = {s.name: s for s in application.steps()}
+    assert steps["letter"].done and "waived" in steps["letter"].detail
+    assert sorted(application.document_paths()) == ["cv", "merged"]
+    # nothing to reverse for the letter: back stops at `new`
+    assert application.undo_last_step() is None

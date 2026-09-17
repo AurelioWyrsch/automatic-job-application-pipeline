@@ -87,5 +87,3 @@ h2 {
 .letter .body ul { margin-bottom: 0.9em; }
 .letter .signoff { margin-top: 1.5em; }
 .letter .signature img { height: 16mm; display: block; margin: 0.6em 0 0.2em 0; }
-.letter .enclosures { margin-top: 2.5em; font-size: 9.5pt; }
-.letter .enclosures ul { list-style: none; margin: 0.2em 0 0 0; }

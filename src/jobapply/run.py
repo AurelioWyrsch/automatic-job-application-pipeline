@@ -62,6 +62,18 @@ def open_for_editing(app: Application, what: str) -> Path:
     return path
 
 
+def show_preflight(app: Application) -> None:
+    """Print what convention has to say: empty Required Fields (which will stop `render`) in red,
+    Recommended Fields, a missing contact person and ß in German text in yellow."""
+    from .preflight import preflight
+
+    report = preflight(app)
+    for line in report.errors:
+        typer.secho(f"  ✗ {line}", fg=typer.colors.RED)
+    for line in report.warnings:
+        typer.secho(f"  ! {line}", fg=typer.colors.YELLOW)
+
+
 def _progress(app: Application) -> str:
     return "  ".join(("✔ " if s.done else "· ") + s.name for s in app.steps())
 
@@ -104,6 +116,7 @@ def run(app: Application) -> None:
     from .posting import fetch_posting
     from .render import render_application
 
+    show_preflight(app)
     last_blocker: Optional[str] = None
     while True:
         steps = {s.name: s for s in app.steps()}
@@ -138,6 +151,7 @@ def run(app: Application) -> None:
 
         if not steps["render"].done:
             typer.echo("render: producing the PDFs …")
+            show_preflight(app)
             for kind, path in render_application(app).items():
                 typer.echo(f"  {kind:13s} {path.name}")
             answer = _prompt("Open the PDFs to check them?", "y/n/q", "y")

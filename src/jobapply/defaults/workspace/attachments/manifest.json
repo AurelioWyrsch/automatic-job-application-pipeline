@@ -1,4 +1,4 @@
 {
-  "_comment": "One entry per static PDF in this folder. kind: reference | diploma | transcript | certificate. Merge order is reference (newest first), diploma, transcript, certificate. title appears in the cover letter's enclosure list.",
+  "_comment": "One entry per static PDF in this folder. kind: reference | diploma | transcript | certificate. Merge order is reference (newest first), diploma, transcript, certificate. title names the document for the applicant.",
   "attachments": []
 }

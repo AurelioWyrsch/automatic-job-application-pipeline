@@ -36,6 +36,8 @@ EMPTY_POSTING: dict[str, Any] = {
     "description": "",
 }
 
+COVER_LETTER_WAIVED = 'this application waives the cover letter (application.json: "cover_letter": false)'
+
 EMPTY_COVER_LETTER: dict[str, Any] = {
     "draft": True,
     "subject": "",
@@ -199,6 +201,11 @@ class Application:
     def save(self) -> None:
         write_json(self.json_path, self.data)
 
+    @property
+    def cover_letter_waived(self) -> bool:
+        """``"cover_letter": false`` in application.json: the Form wants no letter (ADR 0003)."""
+        return self.data.get("cover_letter", True) is False
+
     def profile(self) -> dict[str, Any]:
         """The Profile with this Application's overrides applied (not yet language-resolved)."""
         return deep_merge(self.workspace.profile(), self.data.get("profile_overrides") or {})
@@ -243,19 +250,24 @@ class Application:
         return sort_attachments(selected)
 
     def document_paths(self) -> dict[str, Path]:
-        """Paths of the rendered documents by kind: cv, cover_letter, merged."""
+        """Paths of the documents this Application renders, by kind: cv, cover_letter (unless
+        waived), merged (the Dossier)."""
         lang = self.language
         profile = self.workspace.profile()
         first, last = profile.get("first_name", ""), profile.get("last_name", "")
-        return {kind: self.out_dir / lang.filename(kind, first, last) for kind in ("cv", "cover_letter", "merged")}
+        kinds = ["cv", "merged"] if self.cover_letter_waived else ["cv", "cover_letter", "merged"]
+        return {kind: self.out_dir / lang.filename(kind, first, last) for kind in kinds}
 
     # -- progress -------------------------------------------------------------------
 
     def steps(self) -> list[Step]:
         docs = self.document_paths()
         letter = self.cover_letter()
-        letter_written = not letter.get("draft") and bool(letter.get("intro") or letter.get("body"))
-        if letter.get("draft"):
+        letter_written = self.cover_letter_waived or (
+            not letter.get("draft") and bool(letter.get("intro") or letter.get("body")))
+        if self.cover_letter_waived:
+            letter_detail = "waived (application.json: cover_letter false)"
+        elif letter.get("draft"):
             letter_detail = 'cover-letter.json still has "draft": true'
         elif not letter_written:
             letter_detail = "cover-letter.json has no intro/body paragraphs"
@@ -279,6 +291,8 @@ class Application:
         """Remove the artifact of the most recently completed step so `run` repeats it.
         Returns the step name, or None when only `new` is done."""
         done = [s.name for s in self.steps() if s.done and s.name != "new"]
+        if self.cover_letter_waived and "letter" in done:
+            done.remove("letter")  # nothing was produced, so nothing to reverse
         if not done:
             return None
         step = done[-1]

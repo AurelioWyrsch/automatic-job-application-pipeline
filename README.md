@@ -29,7 +29,7 @@ jobapply run
 | new | you | `run` asks for the posting URL, fetches it and proposes company, role and form URL (from the page's JSON-LD, title or apply link); you confirm or correct them and choose the language |
 | fetch | tool | saves a snapshot of the posting (HTML + readable text) and extracts what it can into `posting.json` — done together with `new`; `jobapply fetch` re-fetches |
 | letter | you | complete `posting.json`, write the job-specific half of the letter in `cover-letter.json` — by hand or with the `extract-posting` and `draft-cover-letter` skills; `[e]` opens the letter in your editor, `[d]` marks it done |
-| render | tool | CV, cover letter and a merged PDF with all attachments into `out/`; offers to open them |
+| render | tool | CV, cover letter and the Dossier (letter, CV, then all attachments in one PDF) into `out/`; offers to open them |
 | scan | tool + you | opens the form in Chrome, detects every field, guesses what goes where, writes `form-fields.json`; you fix what it missed (or the `map-fields` skill) |
 | fill | tool | fills the fields and uploads the files, then leaves the browser open |
 | submit | you | review the form and press the button |
@@ -61,11 +61,13 @@ workspace/
 
 **Languages.** Any string in `profile.json` can be a plain string or a language map `{"de": "...", "en": "..."}`. Rendering fails if a translation for the application's language is missing — on purpose. Dates are ISO (`2025-01`) and formatted per language. German and English are built in; other languages are added under `"languages"` in `config.json`.
 
-**Cover letter.** The letter is assembled as: your specific `intro` → fixed `about_me` → your specific `body` → fixed `closing`. The salutation is built from the contact person in `posting.json` using the `salutation_named` patterns (`"Frau": "Sehr geehrte Frau {last_name},"`), or falls back to `salutation_default`. Markdown is allowed in paragraphs. The enclosure list is generated from the documents and attachments of the application.
+**Cover letter.** The letter is assembled as: your specific `intro` → fixed `about_me` → your specific `body` → fixed `closing`. The subject line is built from the posting (`subject_default` / `subject_with_reference`, e.g. "Bewerbung als {role}, Referenz {reference}") unless `cover-letter.json` sets its own. The salutation is built from the contact person in `posting.json` using the `salutation_named` patterns (`"Frau": "Sehr geehrte Frau {last_name}"` — Swiss letters put no comma after it), or falls back to `salutation_default`; `render` warns when no contact person is known. Markdown is allowed in paragraphs. There is no enclosure list: a form may accept fewer files than you have. A form that wants no letter at all: set `"cover_letter": false` in the application's `application.json` and the letter step is skipped.
+
+**Required and recommended fields.** `config.json` lists which `profile.json` fields must be filled before `render` produces anything (`profile_fields.required`: name, address, phone, email, nationality, education, languages) and which only trigger a warning when empty (`recommended`: photo, birth date). The defaults follow German-speaking Swiss convention ([ADR 0003](docs/adr/0003-documents-follow-swiss-convention.md)); edit the lists for another country. `render`, `run` and `status` also warn about a ß in German text.
 
 **Attachments.** `manifest.json` gives each PDF a `kind` (`reference`, `diploma`, `transcript`, `certificate`), a `date` and a `title` per language. New applications select all of them; remove entries from `attachments` in an application's `application.json` to leave some out. Merge order: reference letters newest first, then diplomas, transcripts, certificates.
 
-**Output names** follow the language: `Lebenslauf_<Name>.pdf`, `Motivationsschreiben_<Name>.pdf`, `Bewerbungsunterlagen_<Name>.pdf` in German; `CV_…`, `CoverLetter_…`, `ApplicationDocuments_…` in English. Patterns live in the language packs.
+**Output names** follow the language: `Lebenslauf_<Name>.pdf`, `Motivationsschreiben_<Name>.pdf`, `Bewerbungsunterlagen_<Name>.pdf` (the Dossier) in German; `CV_…`, `CoverLetter_…`, `ApplicationDocuments_…` in English. Patterns live in the language packs.
 
 ## Form filling
 

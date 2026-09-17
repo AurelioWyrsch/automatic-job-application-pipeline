@@ -27,7 +27,7 @@
 
 <div class="place-date">{{ c.city }}, {{ today }}</div>
 
-<div class="subject">{{ letter.subject }}</div>
+<div class="subject">{{ subject }}</div>
 
 <div class="body">
   <p>{{ salutation }}</p>
@@ -44,12 +44,5 @@
     <div>{{ profile.first_name }} {{ profile.last_name }}</div>
   </div>
 </div>
-
-{% if enclosures %}
-<div class="enclosures">
-  <strong>{{ fixed.enclosures_label }}</strong>
-  <ul>{% for e in enclosures %}<li>{{ e }}</li>{% endfor %}</ul>
-</div>
-{% endif %}
 </body>
 </html>

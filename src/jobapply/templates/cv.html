@@ -24,6 +24,7 @@
       {% if p.birth_date %}<dt>{{ labels.birth_date }}</dt><dd>{{ p.birth_date | long_date }}</dd>{% endif %}
       {% if p.nationality %}<dt>{{ labels.nationality }}</dt><dd>{{ p.nationality }}</dd>{% endif %}
       {% if p.permit %}<dt>{{ labels.permit }}</dt><dd>{{ p.permit }}</dd>{% endif %}
+      {% if p.marital_status %}<dt>{{ labels.marital_status }}</dt><dd>{{ p.marital_status }}</dd>{% endif %}
       {% if c.portfolio %}<dt>{{ labels.portfolio }}</dt><dd><a href="{{ c.portfolio }}">{{ c.portfolio | replace("https://", "") }}</a></dd>{% endif %}
       {% if c.linkedin %}<dt>{{ labels.linkedin }}</dt><dd><a href="{{ c.linkedin }}">{{ c.linkedin | replace("https://", "") }}</a></dd>{% endif %}
       {% if c.github %}<dt>{{ labels.github }}</dt><dd><a href="{{ c.github }}">{{ c.github | replace("https://", "") }}</a></dd>{% endif %}

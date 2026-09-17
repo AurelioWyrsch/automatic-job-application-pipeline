@@ -114,17 +114,19 @@ def fetch(
 @app.command()
 def render(
     ref: str = typer.Argument(..., help="Application slug (or unique part of it)."),
-    only: Optional[str] = typer.Option(None, "--only", help="Render only: cv | cover_letter | merged"),
+    only: Optional[str] = typer.Option(None, "--only", help="Render only: cv | cover_letter | merged (the Dossier)"),
     keep_html: bool = typer.Option(False, "--keep-html", help="Also write the intermediate HTML into out/."),
     workspace: Optional[Path] = WorkspaceOpt,
 ):
-    """Render CV, cover letter and the merged PDF into the Application's out/ folder."""
+    """Render CV, cover letter and the Dossier (one PDF: letter, CV, attachments) into the Application's out/ folder."""
     from .render import render_application
+    from .run import show_preflight
 
     if only not in (None, "cv", "cover_letter", "merged"):
         _fail(JobapplyError("--only must be cv, cover_letter or merged"))
     try:
         application = Application.find(_ws(workspace), ref)
+        show_preflight(application)
         produced = render_application(application, only=only, keep_html=keep_html)
     except JobapplyError as exc:
         _fail(exc)
@@ -225,7 +227,9 @@ def status(
     ref: Optional[str] = typer.Argument(None, help="Application slug; omit for all."),
     workspace: Optional[Path] = WorkspaceOpt,
 ):
-    """Show which steps each Application has completed."""
+    """Show which steps each Application has completed, and what convention warns about."""
+    from .run import show_preflight
+
     try:
         ws = _ws(workspace)
         apps = [Application.find(ws, ref)] if ref else [Application(ws, f) for f in Application.list_folders(ws)]
@@ -241,6 +245,10 @@ def status(
             mark = "✔" if step.done else "·"
             detail = f"  {step.detail}" if step.detail else ""
             typer.echo(f"  {mark} {step.name:7s}{detail}")
+        try:
+            show_preflight(application)
+        except JobapplyError as exc:
+            typer.secho(f"  ! {exc}", fg=typer.colors.YELLOW)
 
 
 @app.command("list")

@@ -19,7 +19,8 @@
     "salutation": {"de": "Frau", "en": "Ms"},
     "birth_date": "1998-04-12",
     "nationality": {"de": "Schweizerin", "en": "Swiss"},
-    "permit": ""
+    "permit": "",
+    "marital_status": ""
   },
   "summary": {
     "de": "Masterstudentin in Applied Information and Data Science mit Berufserfahrung in der Finanzbranche. Ich suche eine Einstiegsmöglichkeit im Bereich Data Science mit 40–60 % Pensum.",

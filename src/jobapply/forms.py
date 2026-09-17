@@ -15,7 +15,7 @@ from urllib.parse import urldefrag
 
 import typer
 
-from .application import Application
+from .application import COVER_LETTER_WAIVED, Application
 from .errors import JobapplyError
 from .fields_js import DETECT_FIELDS_JS
 from .matching import match_field
@@ -93,6 +93,8 @@ class Resolver:
         if kind == "posting":
             return self._format(self._path(self.posting, arg, "posting.json"), field)
         if kind == "document":
+            if arg == "cover_letter" and self.app.cover_letter_waived:
+                raise JobapplyError(f"{COVER_LETTER_WAIVED}; set this field to null or another document")
             if arg not in self.docs:
                 raise JobapplyError(f"Unknown document {arg!r}; use cv, cover_letter or merged")
             path = self.docs[arg]
@@ -104,7 +106,7 @@ class Resolver:
         if kind == "attachments":
             files = [self.app.workspace.attachment_path(e["file"]) for e in self.app.selected_attachments()]
             if arg == "all+documents":
-                files = [self.docs["cv"], self.docs["cover_letter"]] + files
+                files = [self.docs[k] for k in ("cv", "cover_letter") if k in self.docs] + files
             return files
         raise JobapplyError(f"Unknown value target {target!r} (profile:, posting:, document:, attachment:, attachments:, literal:)")
 
