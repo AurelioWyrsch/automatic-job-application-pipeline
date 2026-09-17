@@ -32,8 +32,16 @@ _Avoid_: old CV, input document, upload
 An HTML/CSS document with placeholders that is rendered with Profile and Application data into a PDF.
 
 **Cover Letter**:
-The Application-specific letter, composed of a fixed part (same for every Application in a given language) and a specific part written by the applicant for this Posting.
+The Application-specific letter, composed of a fixed part (same for every Application in a given language) and a specific part written by the applicant for this Posting. An Application may waive it when the Form does not ask for one.
 _Avoid_: motivation letter, letter
+
+**Required Field**:
+A Profile or Cover Letter value without which no document is rendered: the applicant's name, postal address, phone, email and nationality, at least one education entry and at least one language.
+_Avoid_: mandatory field, must-have
+
+**Recommended Field**:
+A Profile value that Swiss convention expects but does not demand — photo, birth date. Its absence is reported to the applicant, never blocking.
+_Avoid_: optional field (that is everything else), soft-required
 
 **Language**:
 The natural language an Application is written in (e.g. `de`, `en`). Profile free-text fields and Templates exist per Language; the set of Languages is open.
@@ -48,6 +56,10 @@ _Avoid_: heuristics, label dictionary
 
 **Snapshot**:
 The saved copy of a Posting (raw page plus readable text) taken when the Application was fetched, so the Posting remains available after the job is taken offline.
+
+**Dossier**:
+The single PDF an employer receives when one upload has to carry everything: Cover Letter, then CV, then the selected Attachments, in that order.
+_Avoid_: merged PDF, bundle, combined file
 
 **Workspace**:
 The directory holding one applicant's private data — Profile, Attachments, Applications, browser state and Template overrides — kept separate from the tool's own code.
