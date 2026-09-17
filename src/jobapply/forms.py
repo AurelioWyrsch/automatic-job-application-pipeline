@@ -233,8 +233,12 @@ def form_session(app: Application, start_with: str) -> None:
     app.workspace.browser_dir.mkdir(parents=True, exist_ok=True)
 
     with sync_playwright() as p:
+        # Without --enable-automation Chrome reports navigator.webdriver = false, so
+        # sites that park automated browsers on an interstitial show the Form.
         context = p.chromium.launch_persistent_context(
             str(app.workspace.browser_dir), channel=channel, headless=False, no_viewport=True,
+            ignore_default_args=["--enable-automation"],
+            args=["--disable-blink-features=AutomationControlled"],
         )
         page = context.pages[0] if context.pages else context.new_page()
         page.goto(url, wait_until="domcontentloaded")
