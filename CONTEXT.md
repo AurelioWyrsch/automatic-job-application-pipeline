@@ -24,6 +24,10 @@ _Avoid_: job application site, ATS page, portal
 A static document (degree, certificate, reference letter) that is uploaded with an Application but never generated.
 _Avoid_: additional document, extra file
 
+**Source Document**:
+An applicant's existing document (current CV, an old cover letter) that is read once to fill the Profile and the fixed part of the Cover Letter, and is never uploaded with an Application.
+_Avoid_: old CV, input document, upload
+
 **Template**:
 An HTML/CSS document with placeholders that is rendered with Profile and Application data into a PDF.
 

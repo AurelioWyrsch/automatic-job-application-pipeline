@@ -9,7 +9,12 @@ CLI job-application pipeline; a human always presses submit. Vocabulary in `CONT
 
 ## Skills
 
-Agent-neutral skills live in `.agents/skills/<name>/SKILL.md` (`.claude/skills/` symlinks there for Claude Code). The three that belong to this tool, each taking an application slug:
+Agent-neutral skills live in `.agents/skills/<name>/SKILL.md` (`.claude/skills/` symlinks there for Claude Code). The five that belong to this tool:
+
+- `setup-workspace` — walk the applicant through placing photo, Source Documents and Attachments in a fresh Workspace, then hand over to `import-documents`
+- `import-documents` — fill `profile.json`, the fixed cover-letter halves, `manifest.json` and `config.json` from the PDFs in `sources/` and `attachments/`; re-runnable
+
+Each of the following takes an application slug:
 
 - `extract-posting` — complete `posting.json` from the fetched snapshot
 - `draft-cover-letter` — offer a sentence per requirement, let the applicant pick and confirm three to five, then draft the specific half of the cover letter into `cover-letter.json`

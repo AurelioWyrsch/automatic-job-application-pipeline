@@ -14,7 +14,7 @@ pip install -e .
 jobapply init workspace        # creates ./workspace with fictional example data
 ```
 
-Then edit the workspace (see below) and start your first application:
+Then fill the workspace — by hand (see below) or with the `setup-workspace` skill — and start your first application:
 
 ```bash
 jobapply run
@@ -53,6 +53,7 @@ workspace/
                            (values may be {"formal": …, "informal": …} for Sie/Du; the application's register picks one)
   cover-letter.en.json
   field-synonyms.json      form labels → profile fields; add a label whenever scan misses one
+  sources/                 your current CV and old cover letters; read by the import-documents skill, never uploaded
   attachments/             PDFs to upload with every application + manifest.json (kind, date, title)
   templates/               optional overrides of cv.html, cover-letter.html, style.css
   applications/<slug>/     one folder per application (see docs/data-files.md)
@@ -75,7 +76,12 @@ Every ATS is different. Expect the first scan on a new platform to miss a few la
 
 ## Agent skills
 
-The judgment steps are handled by three skills in `.agents/skills/`, written for any coding agent that reads `SKILL.md` files (Claude Code finds them via `.claude/skills/`; other agents read them from `.agents/skills/` or as plain instructions). Each takes an application slug:
+The judgment steps are handled by skills in `.agents/skills/`, written for any coding agent that reads `SKILL.md` files (Claude Code finds them via `.claude/skills/`; other agents read them from `.agents/skills/` or as plain instructions). Two set up the workspace:
+
+- `setup-workspace` — asks where your photo, current CV, old cover letters and certificates go, checks the folders, then runs `import-documents`
+- `import-documents` — reads the PDFs in `sources/` and `attachments/` and fills `profile.json`, the fixed cover-letter halves, `manifest.json` and `config.json`; existing values win, translations are flagged; run it again after adding a document
+
+Three take an application slug:
 
 - `extract-posting` — completes `posting.json` from the snapshot (contact, address, requirements)
 - `draft-cover-letter` — offers one sentence per posting requirement (or a question where your profile is silent), lets you pick and confirm three to five, then drafts `intro`/`body` in `cover-letter.json` as plain prose (sets `register`, leaves `draft: true`) and opens it in your editor
