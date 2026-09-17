@@ -1,8 +1,8 @@
 # jobapply
 
-A command-line job-application pipeline. Your data lives in one JSON profile; the tool renders your CV and cover letter to PDF, bundles them with your certificates, and pre-fills the employer's web form in a real browser window.
+A job-application pipeline with an AI assistant in the steps that need judgment. Your data lives in one JSON profile in a private workspace; the CLI renders your CV and cover letter to PDF, bundles them with your certificates, and pre-fills the employer's web form in a real browser window. Where rules are not enough — reading the posting, drafting the letter, mapping an unfamiliar form, importing your existing documents — a coding agent (Claude Code or any agent that reads `SKILL.md` files) takes over through the [skills](#agent-skills) shipped in this repo, and writes its result into a file you review.
 
-**It never presses submit.** Every step is a command you run; between steps you check and edit files; at the end you review the form and send it yourself.
+**It never presses submit.** Every step is a command you run; between steps you check and edit files; at the end you review the form and send it yourself. The CLI itself makes no LLM calls and needs no API key.
 
 ## Quick start
 
@@ -14,7 +14,7 @@ pip install -e .
 jobapply init workspace        # creates ./workspace with fictional example data
 ```
 
-Then fill the workspace — by hand (see below) or with the `setup-workspace` skill — and start your first application:
+Then fill the workspace — by hand (see below) or with the `setup-workspace` skill, which walks you through placing your photo, CV and certificates and imports them — and start your first application:
 
 ```bash
 jobapply run

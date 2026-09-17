@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "jobapply"
 version = "0.1.0"
-description = "CLI job-application pipeline: JSON profile -> PDF documents -> pre-filled web forms. A human always presses submit."
+description = "Job-application pipeline with agent skills for the judgment steps: JSON profile -> PDF documents -> pre-filled web forms. A human always presses submit."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
