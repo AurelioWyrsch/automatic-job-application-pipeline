@@ -180,7 +180,7 @@ def render_application(app: Application, *, only: str | None = None, keep_html: 
         produced["cv"] = docs["cv"]
 
     if "cover_letter" in docs and only in (None, "cover_letter"):
-        html = render_html(app, "cover-letter.html", context)
+        html = render_html(app, "cover-letter.html", {**context, "style": app.letter_style})
         if keep_html:
             (app.out_dir / "cover-letter.html").write_text(html, encoding="utf-8")
         html_to_pdf(html, docs["cover_letter"])

@@ -207,6 +207,12 @@ class Application:
         return self.data.get("style") or self.workspace.config.get("style") or "classic"
 
     @property
+    def letter_style(self) -> str:
+        """The Style of the Cover Letter alone (`letter_style`); defaults to the CV's, so a coloured
+        CV can go with a plain black letter."""
+        return self.data.get("letter_style") or self.workspace.config.get("letter_style") or self.style
+
+    @property
     def cover_letter_waived(self) -> bool:
         """``"cover_letter": false`` in application.json: the Form wants no letter (ADR 0003)."""
         return self.data.get("cover_letter", True) is False

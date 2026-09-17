@@ -123,3 +123,12 @@ def test_style_comes_from_config_or_application(workspace, application):
     application.data["style"] = "nope"
     with pytest.raises(JobapplyError, match="nope"):
         render_html(application, "cv.html", build_context(application))
+
+
+def test_letter_can_have_its_own_style(workspace, application):
+    workspace.config["style"] = "bar"
+    assert application.letter_style == "bar"
+    workspace.config["letter_style"] = "classic"
+    assert application.letter_style == "classic"
+    application.data["letter_style"] = "bare"
+    assert application.letter_style == "bare"
