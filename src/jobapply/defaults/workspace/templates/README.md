@@ -4,4 +4,6 @@ Copy any of the bundled templates here to override them:
 - cover-letter.html
 - style.css
 
-The bundled originals live in the installed package under `jobapply/templates/`.
+A Style is one CSS file that changes the look without touching the HTML: put your own under `styles/<name>.css` here and set `"style": "<name>"` (or `"letter_style"`) in `config.json` or an application's `application.json`. The bundled Styles are classic, bar, bare and accent; `var(--accent)` is the colour from `config.json`.
+
+The bundled originals live in the installed package under `jobapply/templates/` and `jobapply/templates/styles/`.

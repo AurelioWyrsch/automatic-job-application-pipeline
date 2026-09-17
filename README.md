@@ -14,7 +14,7 @@ pip install -e .
 jobapply init workspace        # creates ./workspace with fictional example data
 ```
 
-Then fill the workspace — by hand (see below) or with the `setup-workspace` skill, which walks you through placing your photo, CV and certificates and imports them — and start your first application:
+Then fill the workspace — by hand (see below) or with the `/setup-workspace` skill, which walks you through placing your photo, CV and certificates and imports them — and start your first application:
 
 ```bash
 jobapply run
@@ -24,17 +24,17 @@ jobapply run
 
 ## How a run goes
 
-| Step | Who | What happens |
-|---|---|---|
-| new | you | `run` asks for the posting URL, fetches it and proposes company, role and form URL (from the page's JSON-LD, title or apply link); you confirm or correct them and choose the language |
-| fetch | tool | saves a snapshot of the posting (HTML + readable text) and extracts what it can into `posting.json` — done together with `new`; `jobapply fetch` re-fetches |
-| letter | you | complete `posting.json`, write the job-specific half of the letter in `cover-letter.json` — by hand or with the `extract-posting` and `draft-cover-letter` skills; `[e]` opens the letter in your editor, `[d]` marks it done |
-| render | tool | CV, cover letter and the Dossier (letter, CV, then all attachments in one PDF) into `out/`; offers to open them |
-| scan | tool + you | opens the form in Chrome, detects every field, guesses what goes where, writes `form-fields.json`; you fix what it missed (or the `map-fields` skill) |
-| fill | tool | fills the fields and uploads the files, then leaves the browser open |
-| submit | you | review the form and press the button |
+| Step   | Who        | What happens                                                                                                                                                                                                                    |
+| ------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| new    | you        | `run` asks for the posting URL, fetches it and proposes company, role and form URL (from the page's JSON-LD, title or apply link); you confirm or correct them and choose the language                                          |
+| fetch  | tool       | saves a snapshot of the posting (HTML + readable text) and extracts what it can into `posting.json` — done together with `new`; `jobapply fetch` re-fetches                                                                     |
+| letter | you        | complete `posting.json`, write the job-specific half of the letter in `cover-letter.json` — by hand or with the `/extract-posting` and `/draft-cover-letter` skills; `[e]` opens the letter in your editor, `[d]` marks it done |
+| render | tool       | CV, cover letter and the Dossier (letter, CV, then all attachments in one PDF) into `out/`; offers to open them                                                                                                                 |
+| scan   | tool + you | opens the form in Chrome, detects every field, guesses what goes where, writes `form-fields.json`; you fix what it missed (or the `/map-fields` skill)                                                                          |
+| fill   | tool       | fills the fields and uploads the files, then leaves the browser open                                                                                                                                                            |
+| submit | you        | review the form and press the button                                                                                                                                                                                            |
 
-Quit at any pause with `q`; `jobapply run <slug>` resumes at the same step, because progress is read from the files in the application folder. `jobapply back <slug>` undoes the last completed step. `jobapply status` shows every application.
+Quit at any pause with `q`; `jobapply run <slug>` resumes at the same step, because progress is read from the files in the application folder. `jobapply back <slug>` undoes the last completed step. `jobapply status` shows every application, with what still blocks `render` (an empty required field) and what convention warns about.
 
 Each step also exists as its own command (`new`, `fetch`, `render`, `scan`, `fill`) if you'd rather drive them yourself; `jobapply --help` lists them. `jobapply open <slug> [letter|posting|fields|folder]` opens a file in your editor (`"editor"` in `config.json`, e.g. `"code -r"`). `jobapply new <posting-url>` is all it takes to start one; `--company`, `--role`, `--form` and `--lang` skip the corresponding prompt. Any unique part of a slug works as the argument, e.g. `jobapply run acme`.
 
@@ -46,7 +46,7 @@ Everything personal lives in the workspace and is git-ignored in this repo; keep
 
 ```
 workspace/
-  config.json              default language, extra language packs, browser channel
+  config.json              default language, extra language packs, browser channel, required/recommended profile fields, Style and accent colour
   profile.json             you: contact, personal details, summary, experience, education, skills, languages, certifications, interests
   photo.jpg                optional photo used on the CV (path set in profile.json)
   cover-letter.de.json     the half of the cover letter that is the same for every job, per language
@@ -54,7 +54,7 @@ workspace/
   field-synonyms.json      form labels → profile fields; add a label whenever scan misses one
   sources/                 your current CV and old cover letters; read by the import-documents skill, never uploaded
   attachments/             PDFs to upload with every application + manifest.json (kind, date, title)
-  templates/               optional overrides of cv.html, cover-letter.html, style.css
+  templates/               optional overrides of cv.html, cover-letter.html, style.css; your own Styles in templates/styles/
   applications/<slug>/     one folder per application (see docs/data-files.md)
   .browser/                the tool's own Chrome profile (logins)
 ```
@@ -73,7 +73,7 @@ workspace/
 
 ## Form filling
 
-Fields are matched by two deterministic signals: the HTML `autocomplete` attribute, and the Synonym Table in `field-synonyms.json` (labels per language, matched as whole words; longest match wins). File inputs get `document:cv`, `document:cover_letter`, `attachments:all` (multi-file) or `document:merged` (single "documents" slot). Checkboxes, radios and questions like salary or start date are left for you: set their `value` in `form-fields.json` (`literal:…`) or answer them in the browser.
+Fields are matched by two deterministic signals: the HTML `autocomplete` attribute, and the Synonym Table in `field-synonyms.json` (labels per language, matched as whole words; longest match wins). File inputs get `document:cv`, `document:cover_letter`, `attachments:all` (multi-file) or `document:merged` (the Dossier, for a single "documents" slot). Checkboxes, radios and questions like salary or start date are left for you: set their `value` in `form-fields.json` (`literal:…`) or answer them in the browser.
 
 Every ATS is different. Expect the first scan on a new platform to miss a few labels — add them to `field-synonyms.json` (or let `/map-fields` do it) and the next application on that platform goes smoother. Cross-origin iframes cannot be scanned; that's a browser limit.
 
@@ -82,7 +82,7 @@ Every ATS is different. Expect the first scan on a new platform to miss a few la
 The judgment steps are handled by skills in `.agents/skills/`, written for any coding agent that reads `SKILL.md` files (Claude Code finds them via `.claude/skills/`; other agents read them from `.agents/skills/` or as plain instructions). Two set up the workspace:
 
 - `setup-workspace` — asks where your photo, current CV, old cover letters and certificates go, checks the folders, then runs `import-documents`
-- `import-documents` — reads the PDFs in `sources/` and `attachments/` and fills `profile.json`, the fixed cover-letter halves, `manifest.json` and `config.json`; existing values win, translations are flagged; run it again after adding a document
+- `import-documents` — reads the PDFs in `sources/` and `attachments/` and fills `profile.json`, the fixed cover-letter halves, `manifest.json` and `config.json`, and asks you for any required or recommended field no document covers; existing values win, translations are flagged; run it again after adding a document
 
 Three take an application slug:
 
@@ -94,8 +94,8 @@ In Claude Code that's `/extract-posting <slug>` etc. The CLI itself contains no 
 
 ## Vocabulary and decisions
 
-- `CONTEXT.md` — the terms (Profile, Application, Posting, Form, Attachment, Field Map, …)
-- `docs/adr/` — why the tool is shaped this way
+- `CONTEXT.md` — the terms (Profile, Application, Posting, Form, Attachment, Field Map, Dossier, Style, Required Field, …)
+- `docs/adr/` — why the tool is shaped this way; `docs/research/` — the Swiss application conventions the defaults follow, with sources
 - `docs/data-files.md` — every file in an application folder, how progress is derived, and the `value` syntax of the Field Map
 
 ## Development
