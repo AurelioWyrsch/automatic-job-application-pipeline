@@ -1,6 +1,6 @@
 # jobapply
 
-CLI job-application pipeline; a human always presses submit. Vocabulary in `CONTEXT.md`, decisions in `docs/adr/`, per-application file formats in `docs/data-files.md`.
+CLI job-application pipeline; a human always presses submit. Vocabulary in `CONTEXT.md`, decisions in `docs/adr/`, per-application file formats in `docs/data-files.md`, one-page map of commands, skills and files in `docs/overview.md`.
 
 - Personal data lives only in a Workspace (`workspace/`, git-ignored). Never commit profile data, photos, attachments or applications; the bundled example data is fictional (`src/jobapply/defaults/workspace/`).
 - No LLM calls inside the tool (ADR 0001). Judgment steps read/write files; the skills below do the LLM part.
