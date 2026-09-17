@@ -61,37 +61,6 @@ def test_salutation_from_posting_contact():
     assert build_salutation({"salutation": "Liebe Anna"}, fixed, {"contact": {"salutation": "Frau", "last_name": "X"}}) == "Liebe Anna"
 
 
-def test_informal_register_picks_du_variants(application):
-    _write_letter(application)
-    fixed_path = application.workspace.root / "cover-letter.de.json"
-    fixed = json.loads(fixed_path.read_text(encoding="utf-8"))
-    fixed["closing"] = [{"formal": "Ich freue mich, von Ihnen zu hören.", "informal": "Ich freue mich, von dir zu hören."}]
-    fixed["salutation_named"] = {"formal": {"Frau": "Sehr geehrte Frau {last_name},"},
-                                 "informal": {"Frau": "Hallo {first_name},"}}
-    fixed_path.write_text(json.dumps(fixed), encoding="utf-8")
-    posting = application.posting()
-    posting["contact"].update({"salutation": "Frau", "first_name": "Bianca", "last_name": "Burri"})
-    application.save_posting(posting)
-
-    ctx = build_context(application)
-    assert ctx["salutation"] == "Sehr geehrte Frau Burri," and ctx["fixed"]["closing"] == ["Ich freue mich, von Ihnen zu hören."]
-
-    letter = application.cover_letter()
-    letter["register"] = "informal"
-    application.cover_letter_path.write_text(json.dumps(letter), encoding="utf-8")
-    ctx = build_context(application)
-    assert ctx["salutation"] == "Hallo Bianca," and ctx["fixed"]["closing"] == ["Ich freue mich, von dir zu hören."]
-
-
-def test_unknown_register_fails_loudly(application):
-    _write_letter(application)
-    letter = application.cover_letter()
-    letter["register"] = "royal"
-    application.cover_letter_path.write_text(json.dumps(letter), encoding="utf-8")
-    with pytest.raises(JobapplyError, match="register"):
-        build_context(application)
-
-
 def test_letter_omits_the_home_country_in_the_address(application):
     _write_letter(application)
     posting = application.posting()

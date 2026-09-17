@@ -9,7 +9,7 @@ Fill the Workspace's data files from its documents. File formats: the "Your work
 2. Decide every write by these rules:
    - Empty values are filled; other values stay. A document that contradicts a kept value is a **disagreement**: reported, never applied.
    - Free-text values are language maps. Write the source's language and `en`; every translated value is **flagged**.
-   - Fixed letter paragraphs (`about_me`, `closing`) come from an old cover letter: a plain string when the sentence reads the same in Sie and Du, otherwise a `{formal, informal}` pair whose Du half you write and flag.
+   - Fixed letter paragraphs (`about_me`, `closing`) come from an old cover letter, formal (Sie) throughout.
    - Experience and education from the CV: add entries the profile lacks, newest first.
    - `config.json`: only `default_language` and `home_country`.
    - `manifest.json`: one entry per PDF in `attachments/` — `file`, `kind` (from the PDF, else the filename), `date` (`YYYY-MM` from the PDF, else empty and reported), `title` per language. An entry whose file is gone is reported, not removed.

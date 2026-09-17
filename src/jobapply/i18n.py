@@ -161,25 +161,6 @@ class Language:
         return pattern.format(first=_compact(first), last=_compact(last))
 
 
-REGISTERS = ("formal", "informal")
-
-
-def resolve_register(value: Any, register: str, path: str = "") -> Any:
-    """Pick one Register from register maps ``{"formal": ..., "informal": ...}`` anywhere in
-    ``value``. Unlike language maps, the variants may be any JSON value (a whole
-    ``salutation_named`` block, a list of paragraphs)."""
-    if register not in REGISTERS:
-        raise JobapplyError(f"Unknown register {register!r}; use one of {', '.join(REGISTERS)}")
-    if isinstance(value, dict):
-        if value and all(k in REGISTERS for k in value):
-            if register not in value:
-                raise JobapplyError(f"Missing {register!r} variant at {path or '<root>'}: {value}")
-            return resolve_register(value[register], register, path)
-        return {k: resolve_register(v, register, f"{path}.{k}" if path else k) for k, v in value.items()}
-    if isinstance(value, list):
-        return [resolve_register(v, register, f"{path}[{i}]") for i, v in enumerate(value)]
-    return value
-
 
 def _is_language_map(value: dict, known_codes: set[str]) -> bool:
     """A non-empty dict whose keys are all known language codes and whose values are strings."""

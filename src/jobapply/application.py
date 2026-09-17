@@ -38,7 +38,6 @@ EMPTY_POSTING: dict[str, Any] = {
 
 EMPTY_COVER_LETTER: dict[str, Any] = {
     "draft": True,
-    "register": "formal",
     "subject": "",
     "salutation": "",
     "intro": [],

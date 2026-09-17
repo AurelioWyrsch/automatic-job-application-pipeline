@@ -38,10 +38,6 @@ _Avoid_: motivation letter, letter
 **Language**:
 The natural language an Application is written in (e.g. `de`, `en`). Profile free-text fields and Templates exist per Language; the set of Languages is open.
 
-**Register**:
-Whether an Application addresses the employer formally or informally (German *Sie* vs. *Du*). Chosen per Application, usually to match the Posting's own tone; the fixed part of the Cover Letter carries a variant for each Register where the wording differs.
-_Avoid_: tone, form of address, Du/Sie mode
-
 **Field Map**:
 The per-Application record of which Form fields were detected on a Form page and which Profile value, document or Attachment each one receives. Reviewed by the applicant before filling.
 _Avoid_: mapping, form config

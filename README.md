@@ -50,7 +50,6 @@ workspace/
   profile.json             you: contact, personal details, summary, experience, education, skills, languages, certifications, interests
   photo.jpg                optional photo used on the CV (path set in profile.json)
   cover-letter.de.json     the half of the cover letter that is the same for every job, per language
-                           (values may be {"formal": …, "informal": …} for Sie/Du; the application's register picks one)
   cover-letter.en.json
   field-synonyms.json      form labels → profile fields; add a label whenever scan misses one
   sources/                 your current CV and old cover letters; read by the import-documents skill, never uploaded
@@ -84,7 +83,7 @@ The judgment steps are handled by skills in `.agents/skills/`, written for any c
 Three take an application slug:
 
 - `extract-posting` — completes `posting.json` from the snapshot (contact, address, requirements)
-- `draft-cover-letter` — offers one sentence per posting requirement (or a question where your profile is silent), lets you pick and confirm three to five, then drafts `intro`/`body` in `cover-letter.json` as plain prose (sets `register`, leaves `draft: true`) and opens it in your editor
+- `draft-cover-letter` — offers one sentence per posting requirement (or a question where your profile is silent), lets you pick and confirm three to five, then drafts `intro`/`body` in `cover-letter.json` as plain prose (leaves `draft: true`) and opens it in your editor
 - `map-fields` — resolves unmatched fields in `form-fields.json` and teaches the Synonym Table
 
 In Claude Code that's `/extract-posting <slug>` etc. The CLI itself contains no LLM and needs no API key; see `docs/adr/0001`.

@@ -1,29 +1,16 @@
 {
-  "_comment": "The fixed half of every German cover letter. Markdown allowed. The specific half lives in applications/<slug>/cover-letter.json. Order in the letter: letter.intro, fixed.about_me, letter.body, fixed.closing. Salutation: cover-letter.json's own \"salutation\" wins; otherwise salutation_named[posting.contact.salutation] (\"_\" when the title is unknown) with {salutation} {first_name} {last_name}; otherwise salutation_default. Register: any value may be a map {\"formal\": ..., \"informal\": ...} (Sie/Du); cover-letter.json's \"register\" picks one, default formal.",
-  "salutation_default": {
-    "formal": "Sehr geehrte Damen und Herren,",
-    "informal": "Hallo zusammen,"
-  },
+  "_comment": "The fixed half of every German cover letter. Markdown allowed. The specific half lives in applications/<slug>/cover-letter.json. Order in the letter: letter.intro, fixed.about_me, letter.body, fixed.closing. Salutation: cover-letter.json's own \"salutation\" wins; otherwise salutation_named[posting.contact.salutation] (\"_\" when the title is unknown) with {salutation} {first_name} {last_name}; otherwise salutation_default.",
+  "salutation_default": "Sehr geehrte Damen und Herren,",
   "salutation_named": {
-    "formal": {
-      "Frau": "Sehr geehrte Frau {last_name},",
-      "Herr": "Sehr geehrter Herr {last_name},",
-      "_": "Guten Tag {first_name} {last_name},"
-    },
-    "informal": {
-      "Frau": "Hallo {first_name},",
-      "Herr": "Hallo {first_name},",
-      "_": "Hallo {first_name},"
-    }
+    "Frau": "Sehr geehrte Frau {last_name},",
+    "Herr": "Sehr geehrter Herr {last_name},",
+    "_": "Guten Tag {first_name} {last_name},"
   },
   "about_me": [
     "Zurzeit absolviere ich den Master in Applied Information and Data Science an der Hochschule Luzern. Neben dem Studium arbeite ich als Werkstudentin im Bereich Data Analytics, wo ich Reports automatisiere und Dashboards für das Controlling aufbaue."
   ],
   "closing": [
-    {
-      "formal": "Ich freue mich, Sie in einem persönlichen Gespräch kennenzulernen.",
-      "informal": "Ich freue mich, dich in einem persönlichen Gespräch kennenzulernen."
-    }
+    "Ich freue mich, Sie in einem persönlichen Gespräch kennenzulernen."
   ],
   "sign_off": "Freundliche Grüsse",
   "enclosures_label": "Beilagen"
