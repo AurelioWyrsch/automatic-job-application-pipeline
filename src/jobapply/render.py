@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import markdown
-from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, TemplateNotFound, select_autoescape
 from markupsafe import Markup
 from pypdf import PdfWriter
 
@@ -73,6 +73,8 @@ def build_context(app: Application) -> dict[str, Any]:
         "salutation": build_salutation(letter, fixed, posting),
         "subject": build_subject(letter, fixed, posting),
         "attachments": attachments,
+        "style": app.style,
+        "accent": ws.config.get("accent") or "#0f6b78",
         "today": lang.long_date(),
         "documents": lang.pack["documents"],
         "labels": lang.pack.get("labels", {}),
@@ -112,7 +114,13 @@ def build_subject(letter: dict[str, Any], fixed: dict[str, Any], posting: dict[s
 def render_html(app: Application, template_name: str, context: dict[str, Any]) -> str:
     env = _environment(app.workspace)
     _register_language(env, app.language)
-    return env.get_template(template_name).render(**context)
+    try:
+        return env.get_template(template_name).render(**context)
+    except TemplateNotFound as exc:
+        raise JobapplyError(
+            f"No template or style named {exc.name!r}: Styles are templates/styles/<name>.css, "
+            f"bundled or in {app.workspace.root / 'templates'}"
+        ) from exc
 
 
 def html_to_pdf(html: str, out: Path, *, base_url: Path | None = None) -> None:

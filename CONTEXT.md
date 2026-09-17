@@ -31,6 +31,10 @@ _Avoid_: old CV, input document, upload
 **Template**:
 An HTML/CSS document with placeholders that is rendered with Profile and Application data into a PDF.
 
+**Style**:
+A named look for the Templates — heading treatment, one accent colour, photo size, where dates sit — chosen per Workspace or per Application. The page structure (one column, photo top right, month-precise dates) is the same in every Style.
+_Avoid_: theme, design, layout variant
+
 **Cover Letter**:
 The Application-specific letter, composed of a fixed part (same for every Application in a given language) and a specific part written by the applicant for this Posting. An Application may waive it when the Form does not ask for one.
 _Avoid_: motivation letter, letter

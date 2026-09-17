@@ -28,7 +28,7 @@ jobapply = "jobapply.cli:app"
 where = ["src"]
 
 [tool.setuptools.package-data]
-jobapply = ["templates/*", "defaults/*"]
+jobapply = ["templates/*", "templates/styles/*", "defaults/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

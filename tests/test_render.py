@@ -111,3 +111,15 @@ def test_marital_status_appears_only_when_set(workspace, application):
     (workspace.root / "profile.json").write_text(json.dumps(profile), encoding="utf-8")
     html = render_html(application, "cv.html", build_context(application))
     assert "Zivilstand" in html and "ledig" in html
+
+
+def test_style_comes_from_config_or_application(workspace, application):
+    from jobapply.errors import JobapplyError
+    assert application.style == "classic"
+    workspace.config["style"] = "bar"
+    assert application.style == "bar"
+    html = render_html(application, "cv.html", build_context(application))
+    assert "HSG-style" in html and "--accent: #0f6b78" in html
+    application.data["style"] = "nope"
+    with pytest.raises(JobapplyError, match="nope"):
+        render_html(application, "cv.html", build_context(application))

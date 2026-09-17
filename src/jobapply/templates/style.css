@@ -1,4 +1,6 @@
 /* Shared print styles for CV and cover letter. Override by copying to workspace/templates/style.css */
+:root { --accent: {{ accent }}; }
+
 @page {
   size: A4;
   margin: 18mm 20mm 18mm 20mm;
@@ -87,3 +89,6 @@ h2 {
 .letter .body ul { margin-bottom: 0.9em; }
 .letter .signoff { margin-top: 1.5em; }
 .letter .signature img { height: 16mm; display: block; margin: 0.6em 0 0.2em 0; }
+
+/* The Style chosen in config.json / application.json: templates/styles/<name>.css */
+{% include "styles/" ~ style ~ ".css" %}

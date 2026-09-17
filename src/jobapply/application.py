@@ -202,6 +202,11 @@ class Application:
         write_json(self.json_path, self.data)
 
     @property
+    def style(self) -> str:
+        """The Style (templates/styles/<name>.css): application.json wins over config.json, default classic."""
+        return self.data.get("style") or self.workspace.config.get("style") or "classic"
+
+    @property
     def cover_letter_waived(self) -> bool:
         """``"cover_letter": false`` in application.json: the Form wants no letter (ADR 0003)."""
         return self.data.get("cover_letter", True) is False

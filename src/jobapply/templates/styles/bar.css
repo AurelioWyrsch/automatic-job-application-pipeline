@@ -1,0 +1,21 @@
+/* bar — HSG-style: white caps on an accent-coloured bar, dates right-aligned on the entry's first line */
+h2 {
+  background: var(--accent);
+  color: #fff;
+  border-bottom: 0;
+  padding: 0.18em 0.5em;
+  font-size: 10pt;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.head .photo { width: 35mm; }
+.cv .experience .entry, .cv .education .entry, .cv .certifications .entry {
+  grid-template-columns: 1fr max-content;
+}
+.cv .experience .entry .when, .cv .education .entry .when, .cv .certifications .entry .when {
+  order: 2;
+  text-align: right;
+  white-space: nowrap;
+}
+.cv .entry .org { font-weight: bold; }
+.letter .subject { color: var(--accent); }

@@ -1,0 +1,6 @@
+/* accent — classic structure with the accent colour on name, headings and dates */
+h1, h2 { color: var(--accent); }
+h2 { border-bottom: 1px solid var(--accent); }
+.cv .entry .when { color: var(--accent); }
+.topline .sep { color: var(--accent); }
+.letter .subject { color: var(--accent); }

@@ -6,6 +6,9 @@
   "browser": {
     "channel": "chrome"
   },
+  "style": "classic",
+  "accent": "#0f6b78",
+  "_comment_style": "Look of the PDFs: classic (thin rules, monochrome), bar (HSG-style coloured heading bars, dates right), bare (ETH-style unlabelled personal line, small caps), accent (classic with the accent colour). Per application: \"style\" in application.json. accent is the one colour bar/accent use.",
   "editor": "xdg-open",
   "_comment_editor": "Command `jobapply open` and the [e] key in `run` use to open a file, e.g. \"code -r\" for VS Code.",
   "profile_fields": {

@@ -1,0 +1,13 @@
+/* bare — ETH-style: bare personal values in one line, small caps headings with a light rule, smaller photo */
+h2 {
+  font-size: 9.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #333;
+  border-bottom: 1px solid #999;
+}
+.head .photo { width: 30mm; }
+.details { display: flex; flex-wrap: wrap; gap: 0.1em 0.5em; }
+.details dt.birth_date, .details dt.nationality, .details dt.portfolio, .details dt.linkedin, .details dt.github { display: none; }
+.details dt::after { content: ":"; }
+.details dd:not(:last-child)::after { content: " ·"; color: #999; }
