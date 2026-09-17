@@ -16,6 +16,7 @@ from urllib.parse import urldefrag
 import typer
 
 from .application import COVER_LETTER_WAIVED, Application
+from .workspace import Workspace
 from .errors import JobapplyError
 from .fields_js import DETECT_FIELDS_JS
 from .matching import match_field
@@ -225,23 +226,43 @@ def _pick_option(options: list[dict[str, str]], wanted: str) -> dict[str, str] |
 # -- the interactive session ---------------------------------------------------------
 
 
+def persistent_context(playwright, workspace: Workspace, *, headless: bool):
+    """Chrome on the Workspace's own profile (`.browser/`), so logins survive between runs and
+    the Posting fetch sees the same session as the Form. Without --enable-automation Chrome
+    reports navigator.webdriver = false, so sites that park automated browsers on an
+    interstitial show the real page."""
+    channel = (workspace.config.get("browser") or {}).get("channel", "chrome")
+    workspace.browser_dir.mkdir(parents=True, exist_ok=True)
+    return playwright.chromium.launch_persistent_context(
+        str(workspace.browser_dir), channel=channel, headless=headless, no_viewport=True,
+        ignore_default_args=["--enable-automation"],
+        args=["--disable-blink-features=AutomationControlled"],
+    )
+
+
+def login_session(workspace: Workspace, url: str) -> None:
+    """Open the profile headed so the applicant can log in to a site; the session stays in
+    `.browser/`. The tool never sees the credentials."""
+    from playwright.sync_api import sync_playwright
+
+    with sync_playwright() as p:
+        context = persistent_context(p, workspace, headless=False)
+        page = context.pages[0] if context.pages else context.new_page()
+        page.goto(url, wait_until="domcontentloaded")
+        typer.echo(f"Browser open at {url}")
+        typer.echo("Log in there. The session is kept in the workspace's .browser/ profile; nothing is stored by this tool.")
+        _prompt("Press Enter when you are logged in (closes the browser)")
+        context.close()
+
+
 def form_session(app: Application, start_with: str) -> None:
     from playwright.sync_api import sync_playwright
 
     url = app.data.get("form_url")
     if not url:
         raise JobapplyError("application.json has no form_url")
-    channel = (app.workspace.config.get("browser") or {}).get("channel", "chrome")
-    app.workspace.browser_dir.mkdir(parents=True, exist_ok=True)
-
     with sync_playwright() as p:
-        # Without --enable-automation Chrome reports navigator.webdriver = false, so
-        # sites that park automated browsers on an interstitial show the Form.
-        context = p.chromium.launch_persistent_context(
-            str(app.workspace.browser_dir), channel=channel, headless=False, no_viewport=True,
-            ignore_default_args=["--enable-automation"],
-            args=["--disable-blink-features=AutomationControlled"],
-        )
+        context = persistent_context(p, app.workspace, headless=False)
         page = context.pages[0] if context.pages else context.new_page()
         page.goto(url, wait_until="domcontentloaded")
         typer.echo(f"Browser open at {url}")

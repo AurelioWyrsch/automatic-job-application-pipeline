@@ -32,23 +32,42 @@ class FetchResult:
     extracted: list[str] = field(default_factory=list)
 
 
-def download(url: str, channel: str = "chrome") -> str:
-    """Load the page in headless Chrome so JS-rendered postings work too."""
+LOGIN_WALL_MARKERS = ("authwall", "/login", "/uas/login", "/checkpoint/", "/signin", "/sign-in", "/anmelden")
+
+
+def looks_like_login_wall(requested_url: str, final_url: str) -> bool:
+    """A Posting that redirected to a login page: LinkedIn's authwall, an ATS behind SSO, ..."""
+    if final_url.split("?", 1)[0].rstrip("/") == requested_url.split("?", 1)[0].rstrip("/"):
+        return False
+    path = final_url.lower()
+    return any(marker in path for marker in LOGIN_WALL_MARKERS)
+
+
+def download(url: str, workspace: Workspace) -> str:
+    """Load the page in headless Chrome on the Workspace's browser profile, so JS-rendered
+    postings work and a site the applicant logged in to (`jobapply login`) stays readable."""
     from playwright.sync_api import Error as PlaywrightError, sync_playwright
 
+    from .forms import persistent_context
+
     with sync_playwright() as p:
-        browser = p.chromium.launch(channel=channel, headless=True)
-        page = browser.new_page()
+        context = persistent_context(p, workspace, headless=True)
+        page = context.pages[0] if context.pages else context.new_page()
         try:
             page.goto(url, wait_until="networkidle", timeout=45_000)
         except PlaywrightError as exc:
             try:
                 page.goto(url, wait_until="domcontentloaded", timeout=45_000)
             except PlaywrightError:
-                browser.close()
+                context.close()
                 raise JobapplyError(f"Could not load {url}: {exc}") from exc
-        html = page.content()
-        browser.close()
+        final_url, html = page.url, page.content()
+        context.close()
+    if looks_like_login_wall(url, final_url):
+        raise JobapplyError(
+            f"{url} sent the browser to a login page ({final_url}).\n"
+            f"  Log in once with: jobapply login {url}   then fetch again."
+        )
     return html
 
 
@@ -231,8 +250,7 @@ def _apply_link(soup: BeautifulSoup, apply_labels: list[str]) -> str:
 
 
 def _downloader(workspace: Workspace) -> Download:
-    channel = (workspace.config.get("browser") or {}).get("channel", "chrome")
-    return lambda url: download(url, channel=channel)
+    return lambda url: download(url, workspace)
 
 
 def store_snapshot(app: Application, url: str, html: str) -> FetchResult:

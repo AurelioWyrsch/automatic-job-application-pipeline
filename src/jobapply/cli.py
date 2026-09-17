@@ -181,6 +181,21 @@ def run(
         _fail(exc)
 
 
+@app.command()
+def login(
+    url: str = typer.Argument("https://www.linkedin.com/login", help="Login page to open; default LinkedIn."),
+    workspace: Optional[Path] = WorkspaceOpt,
+):
+    """Open the workspace's browser so you can log in to a site whose postings or forms need it.
+    The session is kept in .browser/; the tool never sees the credentials."""
+    from .forms import login_session
+
+    try:
+        login_session(_ws(workspace), url)
+    except JobapplyError as exc:
+        _fail(exc)
+
+
 @app.command("open")
 def open_cmd(
     ref: str = typer.Argument(..., help="Application slug (or unique part of it)."),

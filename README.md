@@ -75,6 +75,8 @@ workspace/
 
 Fields are matched by two deterministic signals: the HTML `autocomplete` attribute, and the Synonym Table in `field-synonyms.json` (labels per language, matched as whole words; longest match wins). File inputs get `document:cv`, `document:cover_letter`, `attachments:all` (multi-file) or `document:merged` (the Dossier, for a single "documents" slot). Checkboxes, radios and questions like salary or start date are left for you: set their `value` in `form-fields.json` (`literal:…`) or answer them in the browser.
 
+**Sites that need a login** (LinkedIn postings, an ATS behind single sign-on): run `jobapply login` once — it opens the workspace's own Chrome profile on LinkedIn's login page (`jobapply login <url>` for another site), you log in, press Enter. Fetching and form filling both use that profile, so the session carries over; the tool never sees or stores your credentials. A fetch that lands on a login page fails with a hint instead of saving an empty snapshot.
+
 Every ATS is different. Expect the first scan on a new platform to miss a few labels — add them to `field-synonyms.json` (or let `/map-fields` do it) and the next application on that platform goes smoother. Cross-origin iframes cannot be scanned; that's a browser limit.
 
 ## Agent skills
