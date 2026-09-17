@@ -1,0 +1,19 @@
+{
+  "_comment": "The fixed half of every English cover letter. Markdown allowed. The specific half lives in applications/<slug>/cover-letter.json. Order in the letter: letter.intro, fixed.about_me, letter.body, fixed.closing. Salutation: cover-letter.json's own \"salutation\" wins; otherwise salutation_named[posting.contact.salutation] (\"_\" when the title is unknown) with {salutation} {first_name} {last_name}; otherwise salutation_default.",
+  "salutation_default": "Dear Sir or Madam,",
+  "salutation_named": {
+    "Ms": "Dear Ms {last_name},",
+    "Mrs": "Dear Mrs {last_name},",
+    "Mr": "Dear Mr {last_name},",
+    "Dr": "Dear Dr {last_name},",
+    "_": "Dear {first_name} {last_name},"
+  },
+  "about_me": [
+    "I am currently pursuing a Master's degree in Applied Information and Data Science at the Lucerne University of Applied Sciences. Alongside my studies I work as a working student in data analytics, automating reports and building dashboards for the controlling team."
+  ],
+  "closing": [
+    "I would be delighted to discuss my application with you in person."
+  ],
+  "sign_off": "Kind regards",
+  "enclosures_label": "Enclosures"
+}

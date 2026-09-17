@@ -1,0 +1,84 @@
+{
+  "_comment": "Any string may be a plain string or a language map {\"de\": ..., \"en\": ...}. Dates are ISO (YYYY-MM or YYYY-MM-DD). Empty values and empty lists are hidden by the templates.",
+  "first_name": "Mara",
+  "last_name": "Muster",
+  "photo": "photo.png",
+  "signature": null,
+  "contact": {
+    "street": "Musterweg 12",
+    "postal_code": "8000",
+    "city": "Zürich",
+    "country": {"de": "Schweiz", "en": "Switzerland"},
+    "phone": "+41 79 000 00 00",
+    "email": "mara.muster@example.com",
+    "portfolio": "https://mara-muster.example.com",
+    "linkedin": "https://www.linkedin.com/in/mara-muster",
+    "github": "https://github.com/mara-muster"
+  },
+  "personal": {
+    "salutation": {"de": "Frau", "en": "Ms"},
+    "birth_date": "1998-04-12",
+    "nationality": {"de": "Schweizerin", "en": "Swiss"},
+    "permit": ""
+  },
+  "summary": {
+    "de": "Masterstudentin in Applied Information and Data Science mit Berufserfahrung in der Finanzbranche. Ich suche eine Einstiegsmöglichkeit im Bereich Data Science mit 40–60 % Pensum.",
+    "en": "Master's student in Applied Information and Data Science with work experience in the financial industry, looking for an entry-level data science role at 40–60 %."
+  },
+  "experience": [
+    {
+      "start": "2025-01",
+      "end": null,
+      "employer": "Beispiel AG",
+      "location": {"de": "Zürich, Schweiz", "en": "Zurich, Switzerland"},
+      "title": {"de": "Werkstudentin Data Analytics", "en": "Working Student Data Analytics"},
+      "workload": 60,
+      "bullets": [
+        {"de": "Aufbau von Power-BI-Dashboards für das Controlling", "en": "Built Power BI dashboards for the controlling team"},
+        {"de": "Automatisierung von Reports mit Python und SQL", "en": "Automated reporting with Python and SQL"}
+      ]
+    },
+    {
+      "start": "2022-09",
+      "end": "2024-12",
+      "employer": "Muster GmbH",
+      "location": {"de": "Bern, Schweiz", "en": "Bern, Switzerland"},
+      "title": {"de": "Marketing-Assistentin", "en": "Marketing Assistant"},
+      "workload": 50,
+      "bullets": []
+    }
+  ],
+  "education": [
+    {
+      "start": "2025-09",
+      "end": "2027-09",
+      "institution": "Hochschule Luzern",
+      "location": {"de": "Luzern, Schweiz", "en": "Lucerne, Switzerland"},
+      "degree": "Master of Science in Applied Information and Data Science",
+      "bullets": [
+        {"de": "Schwerpunkt Machine Learning und Datenvisualisierung", "en": "Focus on machine learning and data visualisation"}
+      ]
+    },
+    {
+      "start": "2021-09",
+      "end": "2025-09",
+      "institution": "Fachhochschule Nordwestschweiz",
+      "location": {"de": "Windisch, Schweiz", "en": "Windisch, Switzerland"},
+      "degree": "Bachelor of Science in Business Information Technology",
+      "bullets": []
+    }
+  ],
+  "skills": [
+    {"group": {"de": "Programmierung", "en": "Programming"}, "items": ["Python", "SQL", "R"]},
+    {"group": {"de": "Data Science", "en": "Data Science"}, "items": ["pandas", "scikit-learn", "Power BI"]},
+    {"group": {"de": "Werkzeuge", "en": "Tools"}, "items": ["Git", "Docker", "Linux"]}
+  ],
+  "languages": [
+    {"name": {"de": "Deutsch", "en": "German"}, "level": {"de": "Muttersprache", "en": "Native"}},
+    {"name": {"de": "Englisch", "en": "English"}, "level": {"de": "Verhandlungssicher (C1)", "en": "Fluent (C1)"}}
+  ],
+  "certifications": [
+    {"date": "2024-03", "name": "Google Data Analytics Professional Certificate", "issuer": "Coursera"}
+  ],
+  "interests": {"de": "Bergsteigen, Fotografie, Schach", "en": "Mountaineering, photography, chess"}
+}

@@ -1,0 +1,17 @@
+{
+  "default_language": "de",
+  "languages": {
+    "_comment": "Override or add language packs here. Keys: months, months_short, present, date_month_year, date_long, documents, filenames, labels, apply_labels (link texts that lead to the form). See jobapply/i18n.py for the built-in de/en packs."
+  },
+  "browser": {
+    "channel": "chrome"
+  },
+  "editor": "xdg-open",
+  "_comment_editor": "Command `jobapply open` and the [e] key in `run` use to open a file, e.g. \"code -r\" for VS Code.",
+  "home_country": [
+    "CH",
+    "Schweiz",
+    "Switzerland"
+  ],
+  "_comment_home_country": "Spellings of your own country; the cover letter omits the country line when the employer's address matches one."
+}

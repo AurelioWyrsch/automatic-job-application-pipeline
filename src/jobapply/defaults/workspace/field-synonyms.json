@@ -1,0 +1,38 @@
+{
+  "_comment": "The Synonym Table. Keys are targets, values are lists of form labels (lower-case, matched as whole words inside the label, longest match wins). Targets: profile:<path> reads profile.json, posting:<path> reads posting.json, document:cv|cover_letter|merged uploads a rendered PDF, attachments:all uploads every selected attachment, attachment:<file> uploads one, literal:<text> types the text. Add a label here whenever `jobapply scan` misses it.",
+  "any": {
+    "document:cv": ["cv", "lebenslauf", "resume", "résumé", "curriculum vitae"],
+    "document:cover_letter": ["cover letter", "covering letter", "motivation letter", "letter of motivation", "motivationsschreiben", "bewerbungsschreiben", "anschreiben", "begleitschreiben"],
+    "document:merged": ["bewerbungsunterlagen", "bewerbungsdossier", "vollständige bewerbung", "complete application", "application documents", "application dossier"],
+    "attachments:all": ["zeugnisse", "arbeitszeugnisse", "diplome", "zertifikate", "weitere dokumente", "weitere unterlagen", "sonstige dokumente", "certificates", "diplomas", "references", "additional documents", "other documents", "further documents", "attachments", "anhänge", "dokumente", "documents", "unterlagen"],
+    "profile:contact.email": ["e-mail", "email", "e-mail-adresse", "email address", "mail"],
+    "profile:contact.phone": ["telefon", "telefonnummer", "phone", "phone number", "mobile", "mobil", "mobilnummer", "handy", "tel"],
+    "profile:contact.linkedin": ["linkedin"],
+    "profile:contact.github": ["github"],
+    "profile:contact.portfolio": ["portfolio", "website", "webseite", "homepage", "personal website"]
+  },
+  "de": {
+    "profile:first_name": ["vorname"],
+    "profile:last_name": ["nachname", "familienname", "name"],
+    "profile:personal.salutation": ["anrede"],
+    "profile:contact.street": ["strasse", "straße", "strasse / nr.", "adresse", "adresszeile 1"],
+    "profile:contact.postal_code": ["plz", "postleitzahl"],
+    "profile:contact.city": ["ort", "stadt", "wohnort"],
+    "profile:contact.country": ["land", "wohnsitzland"],
+    "profile:personal.birth_date": ["geburtsdatum", "geburtstag"],
+    "profile:personal.nationality": ["nationalität", "staatsangehörigkeit", "staatsbürgerschaft"],
+    "profile:personal.permit": ["bewilligung", "aufenthaltsbewilligung", "arbeitsbewilligung"]
+  },
+  "en": {
+    "profile:first_name": ["first name", "given name", "forename"],
+    "profile:last_name": ["last name", "surname", "family name", "name"],
+    "profile:personal.salutation": ["salutation", "title"],
+    "profile:contact.street": ["street", "street address", "address", "address line 1"],
+    "profile:contact.postal_code": ["postal code", "zip", "zip code", "postcode"],
+    "profile:contact.city": ["city", "town"],
+    "profile:contact.country": ["country", "country of residence"],
+    "profile:personal.birth_date": ["date of birth", "birth date", "birthday"],
+    "profile:personal.nationality": ["nationality", "citizenship"],
+    "profile:personal.permit": ["work permit", "residence permit"]
+  }
+}

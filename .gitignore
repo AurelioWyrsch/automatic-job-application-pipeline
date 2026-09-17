@@ -1,5 +1,5 @@
 # Personal data never enters the public repo
-workspace/
+/workspace/
 *.browser/
 .browser/
 
