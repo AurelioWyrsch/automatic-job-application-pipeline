@@ -50,8 +50,8 @@ def test_cover_letter_html(application):
 
 def test_intro_and_about_me_share_one_paragraph(application):
     _write_letter(application)
-    fixed = json.loads((application.workspace.root / "cover-letter.de.json").read_text(encoding="utf-8"))
-    first_about_me = fixed["about_me"][0]
+    fixed = json.loads((application.workspace.root / "cover-letter-fixed.json").read_text(encoding="utf-8"))
+    first_about_me = fixed["about_me"]["de"][0]
     ctx = build_context(application)
     html = render_html(application, "cover-letter.html", ctx)
     assert f"<p>Erster Absatz mit <strong>fett</strong>. {first_about_me}</p>" in html

@@ -52,7 +52,7 @@ def test_compose_refuses_a_web_form_application(application):
 
 
 def test_missing_email_body_is_reported(by_email):
-    path = by_email.workspace.root / "cover-letter.de.json"
+    path = by_email.workspace.root / "cover-letter-fixed.json"
     fixed = json.loads(path.read_text())
     del fixed["email_body"]
     path.write_text(json.dumps(fixed))

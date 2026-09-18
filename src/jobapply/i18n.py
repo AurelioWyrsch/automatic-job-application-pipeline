@@ -165,10 +165,12 @@ class Language:
 
 
 def _is_language_map(value: dict, known_codes: set[str]) -> bool:
-    """A non-empty dict whose keys are all known language codes and whose values are strings."""
-    return bool(value) and all(k in known_codes for k in value) and all(
-        isinstance(v, str) for v in value.values()
-    )
+    """A non-empty dict whose keys are all known language codes.
+
+    The values may be strings, or whole lists or objects (the fixed half of the
+    Cover Letter keeps its paragraph lists and salutation patterns per Language).
+    """
+    return bool(value) and all(k in known_codes for k in value)
 
 
 def _compact(name: str) -> str:

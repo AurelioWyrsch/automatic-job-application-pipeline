@@ -16,7 +16,7 @@ from .application import COVER_LETTER_WAIVED, Application
 from .errors import JobapplyError
 from .i18n import Language
 from .preflight import preflight
-from .workspace import Workspace, package_file
+from .workspace import FIXED_LETTER, Workspace, package_file
 
 
 def _data_uri(path: Path | None) -> str | None:
@@ -58,8 +58,7 @@ def build_context(app: Application) -> dict[str, Any]:
     if ws.is_home_country(posting["address"].get("country", "")):
         posting["address"]["country"] = ""  # a domestic letter never names the country
     letter = app.cover_letter()
-    fixed_name = f"cover-letter.{lang.code}.json"
-    fixed = lang.resolve(ws.cover_letter_fixed(lang.code), fixed_name)
+    fixed = lang.resolve(ws.cover_letter_fixed(), FIXED_LETTER)
     attachments = [lang.resolve(e, "attachments") for e in app.selected_attachments()]
     return {
         "lang": lang.code,

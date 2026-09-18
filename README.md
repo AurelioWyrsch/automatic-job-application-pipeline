@@ -51,8 +51,7 @@ workspace/
   profile/                 you, four files merged into one Profile: profile.json (name, contact, personal details, summary, interests),
                            experience.json, education.json, skills.json (skills, languages, certifications)
   photo.jpg                optional photo used on the CV (path set in profile/profile.json); a signature image for the letter goes the same way ("signature")
-  cover-letter.de.json     the half of the cover letter that is the same for every job, per language
-  cover-letter.en.json
+  cover-letter-fixed.json  the half of the cover letter that is the same for every job, every language in one file
   field-synonyms.json      form labels → profile fields; add a label whenever scan misses one
   sources/                 your current CV and old cover letters; read by the import-documents skill, never uploaded
   attachments/             PDFs to upload with every application + manifest.json (kind, date, title)
@@ -61,7 +60,7 @@ workspace/
   .browser/                the tool's own Chrome profile (logins)
 ```
 
-**Languages.** Any string in the Profile files can be a plain string or a language map `{"de": "...", "en": "..."}`. Rendering fails if a translation for the application's language is missing — on purpose. Dates are ISO (`2025-01`) and formatted per language. German and English are built in; other languages are added under `"languages"` in `config.json`.
+**Languages.** Any string in the Profile files can be a plain string or a language map `{"de": "...", "en": "..."}`; in `cover-letter-fixed.json` a map may also wrap a whole paragraph list or the salutation patterns. Rendering fails if a translation for the application's language is missing — on purpose. Dates are ISO (`2025-01`) and formatted per language. German and English are built in; other languages are added under `"languages"` in `config.json`.
 
 **Cover letter.** The letter is assembled as: your specific `intro` → fixed `about_me` → your specific `body` → fixed `closing`. `intro` is one sentence naming the role; it and the first `about_me` paragraph are rendered as a single paragraph, so the fixed text continues the opening sentence without a line break. Everything about the requirements goes in `body`. The subject line is built from the posting (`subject_default` / `subject_with_reference`, e.g. "Bewerbung als {role}, Referenz {reference}") unless `cover-letter.json` sets its own. The salutation is built from the contact person in `posting.json` using the `salutation_named` patterns (`"Frau": "Sehr geehrte Frau {last_name}"` — Swiss letters put no comma after it), or falls back to `salutation_default`; `render` warns when no contact person is known. Markdown is allowed in paragraphs. There is no enclosure list: a form may accept fewer files than you have. A form that wants no letter at all: set `"cover_letter": false` in the application's `application.json` and the letter step is skipped.
 
@@ -79,7 +78,7 @@ Fields are matched by two deterministic signals: the HTML `autocomplete` attribu
 
 **Sites that need a login** (LinkedIn postings, an ATS behind single sign-on): run `jobapply login` once — it opens the workspace's own Chrome profile on LinkedIn's login page (`jobapply login <url>` for another site), you log in, press Enter. Fetching and form filling both use that profile, so the session carries over; the tool never sees or stores your credentials. A fetch that lands on a login page fails with a hint instead of saving an empty snapshot.
 
-**Applications by email.** When the posting's apply button is a `mailto:` link, `new` proposes that address as the form URL (`"form_url": "mailto:hr@acme.ch"`; set it by hand for a posting that only prints the address). Such an application has no scan and fill; `email` composes the covering message — subject and salutation as on the letter, the `email_body` paragraphs from `cover-letter.<lang>.json`, your name and phone — into `email.md`, hands it to your mail client and names the Dossier to attach. Attaching and sending stay yours.
+**Applications by email.** When the posting's apply button is a `mailto:` link, `new` proposes that address as the form URL (`"form_url": "mailto:hr@acme.ch"`; set it by hand for a posting that only prints the address). Such an application has no scan and fill; `email` composes the covering message — subject and salutation as on the letter, the `email_body` paragraphs from `cover-letter-fixed.json`, your name and phone — into `email.md`, hands it to your mail client and names the Dossier to attach. Attaching and sending stay yours.
 
 Every ATS is different. Expect the first scan on a new platform to miss a few labels — add them to `field-synonyms.json` (or let `/map-fields` do it) and the next application on that platform goes smoother. Cross-origin iframes cannot be scanned; that's a browser limit.
 

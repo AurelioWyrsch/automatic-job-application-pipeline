@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import quote
 
+from .workspace import FIXED_LETTER
 from .application import Application
 from .errors import JobapplyError
 from .render import build_salutation, build_subject
@@ -37,17 +38,17 @@ class Email:
 
 def compose_email(app: Application) -> Email:
     """Subject and salutation as on the letter, the fixed ``email_body`` paragraphs from
-    cover-letter.<lang>.json, then sign-off, name and phone from the Profile."""
+    cover-letter-fixed.json, then sign-off, name and phone from the Profile."""
     if not app.applies_by_email:
         raise JobapplyError(f'{app.slug} has a web Form, not an email address (application.json "form_url")')
     lang = app.language
-    fixed = lang.resolve(app.workspace.cover_letter_fixed(lang.code), f"cover-letter.{lang.code}.json")
+    fixed = lang.resolve(app.workspace.cover_letter_fixed(), FIXED_LETTER)
     posting = lang.resolve(app.posting(), "posting")
     profile = lang.resolve(app.profile(), "profile")
     paragraphs = fixed.get("email_body")
     if not paragraphs:
         raise JobapplyError(
-            f'cover-letter.{lang.code}.json has no "email_body": add the paragraphs of the covering email '
+            f'{FIXED_LETTER} has no "email_body": add the paragraphs of the covering email '
             f'(placeholders: {{role}}, {{company}}, {{reference}}).'
         )
     letter = app.cover_letter()

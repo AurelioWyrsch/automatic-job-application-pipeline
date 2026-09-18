@@ -22,7 +22,7 @@
     ],
     "recommended": ["photo", "personal.birth_date"]
   },
-  "_comment_profile_fields": "Swiss convention (docs/adr/0003). Dotted paths into profile.json: required fields block `render`; recommended ones only warn. Edit for another country.",
+  "_comment_profile_fields": "Swiss convention (docs/adr/0003). Dotted paths into the Profile (profile/): required fields block `render`; recommended ones only warn. Edit for another country.",
   "home_country": [
     "CH",
     "Schweiz",

@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from .application import Application
-from .workspace import package_file
+from .workspace import FIXED_LETTER, package_file
 
 
 @dataclass
@@ -45,7 +45,7 @@ def preflight(app: Application) -> PreflightReport:
         texts = {
             "profile/": lang.resolve(profile, "profile"),
             "cover-letter.json": letter,
-            f"cover-letter.{lang.code}.json": lang.resolve(app.workspace.cover_letter_fixed(lang.code), "fixed"),
+            FIXED_LETTER: lang.resolve(ws.cover_letter_fixed(), "fixed"),
         }
         hits = [name for name, data in texts.items() if _contains_eszett(data)]
         if hits:

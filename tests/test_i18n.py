@@ -4,6 +4,12 @@ from jobapply.errors import JobapplyError
 from jobapply.i18n import Language
 
 
+def test_language_map_may_wrap_a_list_or_an_object():
+    lang = Language("en")
+    data = {"about_me": {"de": ["a", "b"], "en": ["c"]}, "named": {"de": {"Frau": "x"}, "en": {"Ms": "y"}}}
+    assert lang.resolve(data) == {"about_me": ["c"], "named": {"Ms": "y"}}
+
+
 def test_resolves_language_maps_recursively():
     lang = Language("en")
     data = {"title": {"de": "Hallo", "en": "Hello"}, "items": [{"de": "a", "en": "b"}], "plain": "x",

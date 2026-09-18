@@ -37,3 +37,16 @@ def test_key_in_two_profile_files_is_an_error(workspace):
     path.write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(JobapplyError, match=r"'education'.*education\.json.*skills\.json"):
         workspace.profile()
+
+
+def test_fixed_cover_letter_is_one_file_with_language_maps(workspace):
+    fixed = workspace.cover_letter_fixed()
+    assert fixed["sign_off"] == {"de": "Freundliche Grüsse", "en": "Kind regards"}
+    assert set(fixed["salutation_named"]) == {"de", "en"}
+    assert not (workspace.root / "cover-letter.de.json").exists()
+
+
+def test_missing_fixed_cover_letter_names_the_file(workspace):
+    (workspace.root / "cover-letter-fixed.json").unlink()
+    with pytest.raises(JobapplyError, match="cover-letter-fixed.json"):
+        workspace.cover_letter_fixed()

@@ -27,9 +27,9 @@ Five skills belong to the tool (`.agents/skills/`, symlinked from `.claude/skill
 | Skill | Scope | Reads | Writes |
 |---|---|---|---|
 | `setup-workspace` | Workspace | – | places `photo.jpg`, `sources/`, `attachments/`; runs `init` if needed; hands over to `import-documents` |
-| `import-documents` | Workspace | PDFs in `sources/`, `attachments/` | `profile/*.json`, `cover-letter.<lang>.json` (fixed halves), `attachments/manifest.json`, `config.json` |
+| `import-documents` | Workspace | PDFs in `sources/`, `attachments/` | `profile/*.json`, `cover-letter-fixed.json`, `attachments/manifest.json`, `config.json` |
 | `extract-posting <slug>` | Application | `snapshot.md/html` | `posting.json`; hands over to `draft-cover-letter` |
-| `draft-cover-letter <slug>` | Application | `posting.json`, `profile/*.json`, `cover-letter.<lang>.json` | `cover-letter.json` (`intro`, `body`, `draft: false`) |
+| `draft-cover-letter <slug>` | Application | `posting.json`, `profile/*.json`, `cover-letter-fixed.json` | `cover-letter.json` (`intro`, `body`, `draft: false`) |
 | `map-fields <slug>` | Application | `form-fields.json`, `profile/*.json`, `posting.json` | `form-fields.json` (`value` targets), `field-synonyms.json` |
 
 ## Which files need your input
@@ -39,7 +39,7 @@ Workspace level, once:
 | File | Needs input? | Filled by |
 |---|---|---|
 | `profile/` (`profile.json`, `experience.json`, `education.json`, `skills.json`; ADR 0005) | Yes, entirely: the example data is fictional | `import-documents`, then you |
-| `cover-letter.de.json` / `.en.json` | Yes: `about_me` and `closing` (the fixed half). Subject/salutation patterns and `email_body` are usable defaults | `import-documents`, then you |
+| `cover-letter-fixed.json` | Yes: `about_me` and `closing` (the fixed half, every Language in one file). Subject/salutation patterns and `email_body` are usable defaults | `import-documents`, then you |
 | `attachments/manifest.json` | Yes, if you have attachments: one entry per PDF (`kind`, `date`, `title`) | `import-documents` |
 | `config.json` | Mostly fine as shipped. Check `default_language`, `style`/`accent`, `editor`, `operator` (the program `[a]` starts at the letter step), `home_country`; `profile_fields` only when not applying in CH | you |
 | `field-synonyms.json` | No; grows over time | `map-fields` |
@@ -59,7 +59,7 @@ Per Application, created by `jobapply new`:
 
 ```
 jobapply init ──► setup-workspace ──► import-documents
-                   (photo, sources/,     (profile/, cover-letter.<lang>.json,
+                   (photo, sources/,     (profile/, cover-letter-fixed.json,
                     attachments/)         manifest.json, config.json)
 
 jobapply new <url> ──► application.json, snapshot.*, posting.json

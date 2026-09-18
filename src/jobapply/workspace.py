@@ -10,7 +10,7 @@ Layout::
         education.json         education
         skills.json            skills, languages, certifications
       field-synonyms.json    the Synonym Table
-      cover-letter.<lang>.json   the fixed half of the Cover Letter, per Language
+      cover-letter-fixed.json  the fixed half of the Cover Letter, every Language in one file
       attachments/           static documents + manifest.json
       templates/             optional overrides of the built-in Templates
       applications/          one folder per Application
@@ -32,6 +32,7 @@ from .i18n import BUILTIN_LANGUAGES, Language, deep_merge
 
 ENV_VAR = "JOBAPPLY_WORKSPACE"
 DEFAULT_DIR = "workspace"
+FIXED_LETTER = "cover-letter-fixed.json"
 PROFILE_FILES = ("profile.json", "experience.json", "education.json", "skills.json")
 
 
@@ -174,13 +175,9 @@ class Workspace:
     def save_synonyms(self, data: dict[str, Any]) -> None:
         write_json(self.root / "field-synonyms.json", data)
 
-    def cover_letter_fixed(self, lang: str) -> dict[str, Any]:
-        path = self.root / f"cover-letter.{lang}.json"
-        if not path.exists():
-            raise JobapplyError(
-                f"No fixed cover-letter text for language '{lang}': create {path}"
-            )
-        return _read_json(path)
+    def cover_letter_fixed(self) -> dict[str, Any]:
+        """The fixed half of the Cover Letter, not yet language-resolved (values may be language maps)."""
+        return _read_json(self.root / FIXED_LETTER)
 
     def attachments_manifest(self) -> list[dict[str, Any]]:
         path = self.attachments_dir / "manifest.json"

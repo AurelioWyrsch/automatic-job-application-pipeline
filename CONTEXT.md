@@ -48,7 +48,7 @@ A Profile value that Swiss convention expects but does not demand — photo, bir
 _Avoid_: optional field (that is everything else), soft-required
 
 **Language**:
-The natural language an Application is written in (e.g. `de`, `en`). Profile free-text fields and Templates exist per Language; the set of Languages is open.
+The natural language an Application is written in (e.g. `de`, `en`). Profile free-text fields, the fixed part of the Cover Letter and Templates exist per Language; the set of Languages is open.
 
 **Field Map**:
 The per-Application record of which Form fields were detected on a Form page and which Profile value, document or Attachment each one receives. Reviewed by the applicant before filling.
