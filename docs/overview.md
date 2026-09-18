@@ -28,7 +28,7 @@ Five skills belong to the tool (`.agents/skills/`, symlinked from `.claude/skill
 |---|---|---|---|
 | `setup-workspace` | Workspace | – | places `photo.jpg`, `sources/`, `attachments/`; runs `init` if needed; hands over to `import-documents` |
 | `import-documents` | Workspace | PDFs in `sources/`, `attachments/` | `profile.json`, `cover-letter.<lang>.json` (fixed halves), `attachments/manifest.json`, `config.json` |
-| `extract-posting <slug>` | Application | `snapshot.md/html` | `posting.json` |
+| `extract-posting <slug>` | Application | `snapshot.md/html` | `posting.json`; hands over to `draft-cover-letter` |
 | `draft-cover-letter <slug>` | Application | `posting.json`, `profile.json`, `cover-letter.<lang>.json` | `cover-letter.json` (`intro`, `body`, `draft: false`) |
 | `map-fields <slug>` | Application | `form-fields.json`, `profile.json`, `posting.json` | `form-fields.json` (`value` targets), `field-synonyms.json` |
 

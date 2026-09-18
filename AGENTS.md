@@ -3,7 +3,7 @@
 CLI job-application pipeline; a human always presses submit. Vocabulary in `CONTEXT.md`, decisions in `docs/adr/`, per-application file formats in `docs/data-files.md`, one-page map of commands, skills and files in `docs/overview.md`.
 
 - Personal data lives only in a Workspace (`workspace/`, git-ignored). Never commit profile data, photos, attachments or applications; the bundled example data is fictional (`src/jobapply/defaults/workspace/`).
-- No LLM calls inside the tool (ADR 0001). Judgment steps read/write files; the skills below do the LLM part.
+- No LLM calls inside the tool (ADR 0001). Judgment steps read/write files; the skills below do the LLM part. `run` starts the Operator — the program named by `operator` in the Workspace `config.json`, by default Claude Code with `extract-posting` — at the letter step on `[a]` (ADR 0004).
 - Application progress is derived from files in the application folder (table in `docs/data-files.md`), never from a state file; `run` and `back` rely on that.
 - Document defaults follow German-speaking Swiss convention (ADR 0003, sources in `docs/research/`): Required Fields block `render`, Recommended Fields warn; both lists live in the Workspace's `config.json`, not in code. Styles are CSS files in `templates/styles/`.
 - Run tests with `.venv/bin/python -m pytest`. Chrome-dependent paths (PDF, scan/fill) are exercised manually against a local HTML file, not in the unit tests.
@@ -17,7 +17,7 @@ Agent-neutral skills live in `.agents/skills/<name>/SKILL.md` (`.claude/skills/`
 
 Each of the following takes an application slug:
 
-- `extract-posting` — complete `posting.json` from the fetched snapshot
+- `extract-posting` — complete `posting.json` from the fetched snapshot, then hand over to `draft-cover-letter`
 - `draft-cover-letter` — offer a sentence per requirement, let the applicant pick and confirm three to five, then draft the specific half of the cover letter into `cover-letter.json`
 - `map-fields` — resolve unmatched fields in `form-fields.json` and extend the Synonym Table
 

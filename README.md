@@ -95,7 +95,7 @@ Three take an application slug:
 - `draft-cover-letter` — offers one sentence per posting requirement (or a question where your profile is silent), lets you pick and confirm three to five, then drafts `intro`/`body` in `cover-letter.json` as plain prose (leaves `draft: true`) and opens it in your editor
 - `map-fields` — resolves unmatched fields in `form-fields.json` and teaches the Synonym Table
 
-In Claude Code that's `/extract-posting <slug>` etc. — or press `[a]` at the letter step and `jobapply run` starts it for you (`"operator"` in `config.json`, see `docs/adr/0004`). The CLI itself contains no LLM and needs no API key; see `docs/adr/0001`.
+In Claude Code that's `/extract-posting <slug>` etc. — or press `[a]` at the letter step and `jobapply run` starts it for you (`"operator"` in `config.json`, see `docs/adr/0004`). That value is the full command line, so model, effort and permissions are yours to set there, e.g. `claude "/{skill} {slug}" --model sonnet --effort medium --add-dir {tool} --allowedTools Bash,Read,Write,Edit`; set it to `""` to go back to running the skills yourself. The CLI itself contains no LLM and needs no API key; see `docs/adr/0001`.
 
 ## Vocabulary and decisions
 
