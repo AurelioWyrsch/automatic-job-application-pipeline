@@ -250,7 +250,13 @@ class Application:
     def cover_letter(self) -> dict[str, Any]:
         if not self.cover_letter_path.exists():
             return dict(EMPTY_COVER_LETTER)
-        return deep_merge(EMPTY_COVER_LETTER, _read_json(self.cover_letter_path))
+        letter = deep_merge(EMPTY_COVER_LETTER, _read_json(self.cover_letter_path))
+        # `intro` and `body` are lists of paragraphs, but a hand-typed file may hold one
+        # string; blank lines then separate the paragraphs.
+        for key in ("intro", "body"):
+            if isinstance(letter[key], str):
+                letter[key] = [p.strip() for p in letter[key].split("\n\n") if p.strip()]
+        return letter
 
     def mark_letter_done(self) -> None:
         """The applicant declares the specific half finished: `draft` becomes false."""

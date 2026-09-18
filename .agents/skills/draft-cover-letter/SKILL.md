@@ -17,8 +17,8 @@ The letter says what the CV cannot: which parts of this Posting the applicant an
 5. Produce, in `cover-letter.json`:
    - `subject`: empty; the tool builds "Bewerbung als <role>, Referenz <reference>" from `posting.json`. Set it only when the Posting asks for a specific wording.
    - `salutation`: empty; the tool builds it from `posting.contact` or falls back to the generic form. If `posting.contact` has no name, say so to the applicant: Swiss guides want a named reader, and the applicant may know one.
-   - `intro`: **exactly one sentence** that names the role, e.g. "Mit grossem Interesse habe ich Ihre Ausschreibung als <role> gelesen." The tool renders it and the first fixed `about_me` paragraph as one paragraph, so the sentence must read naturally straight into `about_me`; no requirement goes here.
-   - `body`: one or two paragraphs that take all confirmed sentences in turn, each tying the Posting's wording to the applicant's evidence. End with one sentence on why this employer.
+   - `intro`: a JSON list holding **exactly one sentence** that names the role, e.g. "Mit grossem Interesse habe ich Ihre Ausschreibung als <role> gelesen." The tool renders it and the first fixed `about_me` paragraph as one paragraph, so the sentence must read naturally straight into `about_me`; no requirement goes here.
+   - `body`: a JSON list of one or two paragraphs (one string each) that take all confirmed sentences in turn, each tying the Posting's wording to the applicant's evidence. End with one sentence on why this employer.
    - Leave `draft: true`. The applicant edits, then marks it done (`[d]` in `jobapply run`).
 6. Show the draft to the applicant in the reply as well, then open the file for them: `jobapply open <slug> letter`.
 
