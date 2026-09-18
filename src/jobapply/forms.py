@@ -252,11 +252,27 @@ def login_session(workspace: Workspace, url: str) -> None:
         typer.echo(f"Browser open at {url}")
         typer.echo("Log in there. The session is kept in the workspace's .browser/ profile; nothing is stored by this tool.")
         _prompt("Press Enter when you are logged in (closes the browser)")
+        _close_quietly(context)
+
+
+def _close_quietly(context) -> None:
+    """Close the browser context; one the applicant already closed raises, and that is fine."""
+    from playwright.sync_api import Error as PlaywrightError
+
+    try:
         context.close()
+    except PlaywrightError as exc:
+        if not _browser_was_closed(exc):
+            raise
+
+
+def _browser_was_closed(exc: Exception) -> bool:
+    """Playwright's TargetClosedError is not exported in every version; its message is stable."""
+    return "has been closed" in str(exc)
 
 
 def form_session(app: Application, start_with: str) -> None:
-    from playwright.sync_api import sync_playwright
+    from playwright.sync_api import Error as PlaywrightError, sync_playwright
 
     url = app.data.get("form_url")
     if not url:
@@ -273,17 +289,23 @@ def form_session(app: Application, start_with: str) -> None:
         _prompt("Press Enter when the page to work on is showing")
 
         action = start_with
-        while True:
-            if action == "scan":
-                _do_scan(page, app)
-            elif action == "fill":
-                _do_fill(page, app)
-            typer.echo("")
-            answer = _prompt("[s] scan this page   [f] fill this page   [q] quit (closes the browser)", default="q")
-            action = {"s": "scan", "f": "fill"}.get(answer.strip().lower()[:1], "quit")
-            if action == "quit":
-                break
-        context.close()
+        try:
+            while True:
+                if action == "scan":
+                    _do_scan(page, app)
+                elif action == "fill":
+                    _do_fill(page, app)
+                typer.echo("")
+                answer = _prompt("[s] scan this page   [f] fill this page   [q] quit (closes the browser)", default="q")
+                action = {"s": "scan", "f": "fill"}.get(answer.strip().lower()[:1], "quit")
+                if action == "quit":
+                    break
+        except PlaywrightError as exc:
+            if not _browser_was_closed(exc):
+                raise
+            # The applicant closed Chrome themselves: that ends the session, it is not an error.
+            typer.secho("  the browser was closed", fg=typer.colors.YELLOW)
+        _close_quietly(context)
 
 
 def _do_scan(page, app: Application) -> None:
