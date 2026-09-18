@@ -29,7 +29,7 @@ AUTOCOMPLETE_TARGETS = {
     "country-name": "profile:contact.country",
     "bday": "profile:personal.birth_date",
     "honorific-prefix": "profile:personal.salutation",
-    "url": "profile:contact.portfolio",
+    "url": "profile:links.portfolio",
 }
 
 FILE_TARGET_PREFIXES = ("document:", "attachment:", "attachments:")

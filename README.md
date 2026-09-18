@@ -48,7 +48,7 @@ Everything personal lives in the workspace and is git-ignored in this repo; keep
 ```
 workspace/
   config.json              default language, extra language packs, browser channel, required/recommended profile fields, Style and accent colour
-  profile/                 you, four files merged into one Profile: profile.json (name, contact, personal details, summary, interests),
+  profile/                 you, four files merged into one Profile: profile.json (name, gender, contact, links, personal details, summary, interests),
                            experience.json, education.json, skills.json (skills, languages, certifications)
   photo.jpg                optional photo used on the CV (path set in profile/profile.json); a signature image for the letter goes the same way ("signature")
   cover-letter-fixed.json  the half of the cover letter that is the same for every job, every language in one file

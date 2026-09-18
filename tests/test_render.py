@@ -152,3 +152,9 @@ def test_letter_can_have_its_own_style(workspace, application):
     assert application.letter_style == "classic"
     application.data["letter_style"] = "bare"
     assert application.letter_style == "bare"
+
+
+def test_cv_links_come_from_profile_links(application):
+    html = render_html(application, "cv.html", build_context(application))
+    assert 'href="https://www.linkedin.com/in/mara-muster"' in html
+    assert 'href="https://github.com/mara-muster"' in html

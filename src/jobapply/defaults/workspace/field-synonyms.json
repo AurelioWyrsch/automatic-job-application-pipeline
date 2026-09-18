@@ -7,9 +7,10 @@
     "attachments:all": ["zeugnisse", "arbeitszeugnisse", "diplome", "zertifikate", "weitere dokumente", "weitere unterlagen", "sonstige dokumente", "certificates", "diplomas", "references", "additional documents", "other documents", "further documents", "attachments", "anhänge", "dokumente", "documents", "unterlagen"],
     "profile:contact.email": ["e-mail", "email", "e-mail-adresse", "email address", "mail"],
     "profile:contact.phone": ["telefon", "telefonnummer", "phone", "phone number", "mobile", "mobil", "mobilnummer", "handy", "tel"],
-    "profile:contact.linkedin": ["linkedin"],
-    "profile:contact.github": ["github"],
-    "profile:contact.portfolio": ["portfolio", "website", "webseite", "homepage", "personal website"]
+    "profile:links.linkedin": ["linkedin"],
+    "profile:links.github": ["github"],
+    "profile:gender": ["gender", "geschlecht", "sex"],
+    "profile:links.portfolio": ["portfolio", "website", "webseite", "homepage", "personal website"]
   },
   "de": {
     "profile:first_name": ["vorname"],

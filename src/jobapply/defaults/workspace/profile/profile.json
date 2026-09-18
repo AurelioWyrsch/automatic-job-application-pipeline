@@ -2,6 +2,7 @@
   "_comment": "Any string may be a plain string or a language map {\"de\": ..., \"en\": ...}. Dates are ISO (YYYY-MM or YYYY-MM-DD). Empty values and empty lists are hidden by the templates. The Profile is these four files merged: profile.json, experience.json, education.json, skills.json (ADR 0005).",
   "first_name": "Mara",
   "last_name": "Muster",
+  "gender": {"de": "Frau", "en": "Female"},
   "photo": "photo.png",
   "signature": null,
   "contact": {
@@ -10,11 +11,9 @@
     "city": "Zürich",
     "country": {"de": "Schweiz", "en": "Switzerland"},
     "phone": "+41 79 000 00 00",
-    "email": "mara.muster@example.com",
-    "portfolio": "https://mara-muster.example.com",
-    "linkedin": "https://www.linkedin.com/in/mara-muster",
-    "github": "https://github.com/mara-muster"
+    "email": "mara.muster@example.com"
   },
+  "links": {"portfolio": "https://mara-muster.example.com", "linkedin": "https://www.linkedin.com/in/mara-muster", "github": "https://github.com/mara-muster"},
   "personal": {
     "salutation": {"de": "Frau", "en": "Ms"},
     "birth_date": "1998-04-12",
