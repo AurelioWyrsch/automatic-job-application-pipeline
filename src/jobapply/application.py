@@ -77,6 +77,10 @@ class Application:
             raise JobapplyError(f"{folder} has no application.json")
         self.data: dict[str, Any] = _read_json(self.json_path)
 
+    def reload(self) -> None:
+        """Re-read application.json: the Operator may have corrected it (form_url, company, role)."""
+        self.data = _read_json(self.json_path)
+
     # -- lookup / creation -------------------------------------------------------
 
     @classmethod
@@ -91,7 +95,8 @@ class Application:
         form_url: str,
     ) -> "Application":
         workspace.language(language)  # validates the language exists
-        slug = f"{date.today().isoformat()}-{slugify(company)}-{slugify(role)}"
+        parts = [date.today().isoformat()] + [slugify(text) for text in (company, role) if text.strip()]
+        slug = "-".join(parts) if len(parts) > 1 else f"{parts[0]}-x"
         folder = workspace.applications_dir / slug
         if folder.exists():
             raise JobapplyError(f"Application folder already exists: {folder}")
@@ -259,6 +264,19 @@ class Application:
                 letter[key] = [p.strip() for p in letter[key].split("\n\n") if p.strip()]
         return letter
 
+    def letter_untouched(self) -> bool:
+        """True while cover-letter.json is still the empty file `new` wrote: nobody, neither the
+        applicant nor the Operator, has put anything into it. `run` auto-starts the interview only then."""
+        if self.cover_letter_waived:
+            return False
+        letter = self.cover_letter()
+        return bool(letter.get("draft")) and not any(letter.get(k) for k in ("subject", "salutation", "intro", "body"))
+
+    def posting_extracted(self) -> bool:
+        """True once posting.json carries requirements: JSON-LD never yields them, so their
+        presence means the Operator or the applicant completed the file."""
+        return bool(self.posting().get("requirements"))
+
     def mark_letter_done(self) -> None:
         """The applicant declares the specific half finished: `draft` becomes false."""
         letter = self.cover_letter()
@@ -272,6 +290,17 @@ class Application:
 
     def save_field_map(self, data: dict[str, Any]) -> None:
         write_json(self.field_map_path, data)
+
+    @property
+    def form_checked(self) -> bool:
+        """The Form Check ran (or a scan happened): form-fields.json exists."""
+        return self.field_map_path.exists()
+
+    @property
+    def form_gated(self) -> bool:
+        """The Form Check found a Gated Form and no page has been scanned since."""
+        field_map = self.field_map()
+        return bool(field_map.get("gated")) and not field_map.get("pages")
 
     def selected_attachments(self) -> list[dict[str, Any]]:
         """Manifest entries selected for this Application, in upload/merge order."""
@@ -323,7 +352,13 @@ class Application:
         field_map = self.field_map()
         pages = field_map.get("pages", [])
         filled = any(p.get("filled_at") for p in pages)
-        steps.append(Step("scan", bool(pages), f"{sum(len(p.get('fields', [])) for p in pages)} fields" if pages else ""))
+        if pages:
+            scan_detail = f"{sum(len(p.get('fields', [])) for p in pages)} fields"
+        elif field_map.get("gated"):
+            scan_detail = f"gated form ({field_map.get('reason') or 'login'}): fill it yourself, or [f] in run"
+        else:
+            scan_detail = ""
+        steps.append(Step("scan", bool(pages) or bool(field_map.get("gated")), scan_detail))
         steps.append(Step("fill", filled, max((p.get("filled_at") or "" for p in pages), default="")))
         return steps
 

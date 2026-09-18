@@ -66,26 +66,28 @@ def init(
 @app.command()
 def new(
     posting_url: Optional[str] = typer.Argument(None, help="URL of the Posting (job description)."),
-    company: Optional[str] = typer.Option(None, "--company", "-c", help="Company name (skips the prompt)."),
-    role: Optional[str] = typer.Option(None, "--role", "-r", help="Role / job title (skips the prompt)."),
-    form_url: Optional[str] = typer.Option(None, "--form", "-f", help="URL of the Form, or mailto:<address> when applying by email (skips the prompt)."),
-    language: Optional[str] = typer.Option(None, "--lang", "-l", help="Language code (skips the prompt)."),
+    company: Optional[str] = typer.Option(None, "--company", "-c", help="Company name (overrides what the page says)."),
+    role: Optional[str] = typer.Option(None, "--role", "-r", help="Role / job title (overrides what the page says)."),
+    form_url: Optional[str] = typer.Option(None, "--form", "-f", help="URL of the Form, or mailto:<address> when applying by email (overrides the page's apply link)."),
+    language: Optional[str] = typer.Option(None, "--lang", "-l", help="Language code (default: default_language in config.json)."),
     workspace: Optional[Path] = WorkspaceOpt,
 ):
-    """Create an Application from a Posting URL: fetches the page, proposes company, role and
-    form URL for you to confirm, and saves the Snapshot."""
+    """Create an Application from a Posting URL: fetches the page, names the folder from what it
+    says, saves the Snapshot and has the unattended Operator complete posting.json. Asks nothing."""
     from .posting import new_application
+    from .run import extract_posting
 
     try:
         ws = _ws(workspace)
         posting_url = posting_url or _ask("Posting URL (job description)")
         typer.echo("Fetching the posting …")
         application = new_application(
-            ws, posting_url, _ask, company=company, role=role, form_url=form_url, language=language,
+            ws, posting_url, company=company, role=role, form_url=form_url, language=language,
         )
+        typer.echo(f"Created {application.folder} (snapshot saved)")
+        extract_posting(application)
     except JobapplyError as exc:
         _fail(exc)
-    typer.echo(f"Created {application.folder} (snapshot saved)")
     typer.echo(f"Next: jobapply run {application.slug}")
 
 
@@ -141,7 +143,7 @@ def scan(
     ref: str = typer.Argument(..., help="Application slug (or unique part of it)."),
     workspace: Optional[Path] = WorkspaceOpt,
 ):
-    """Open the Form in the browser and write the Field Map (form-fields.json)."""
+    """Open the Form in the browser (with your login) and write the Field Map (form-fields.json); `check` does it unattended."""
     from .forms import form_session
 
     try:
@@ -189,18 +191,49 @@ def email(
 
 @app.command()
 def run(
-    ref: Optional[str] = typer.Argument(None, help="Application slug; omit to pick one or start a new one."),
+    ref: Optional[str] = typer.Argument(None, help="Application slug, or a Posting URL to start from; omit to pick one."),
     workspace: Optional[Path] = WorkspaceOpt,
 ):
-    """Walk an Application through every step, pausing wherever you need to act. Re-run to resume."""
-    from .run import choose_application, run as run_pipeline
+    """Walk an Application through every step, pausing only where you must act. Re-run to resume."""
+    from .run import choose_application, is_url, run as run_pipeline, start_application
 
     try:
         ws = _ws(workspace)
-        application = Application.find(ws, ref) if ref else choose_application(ws, _ask)
+        if ref and is_url(ref):
+            application = start_application(ws, ref)
+        elif ref:
+            application = Application.find(ws, ref)
+        else:
+            application = choose_application(ws, _ask)
         run_pipeline(application)
     except JobapplyError as exc:
         _fail(exc)
+
+
+@app.command()
+def check(
+    ref: str = typer.Argument(..., help="Application slug (or unique part of it)."),
+    workspace: Optional[Path] = WorkspaceOpt,
+):
+    """The Form Check: visit the Form without your login, classify it Open or Gated and, for an
+    Open Form, write the Field Map (form-fields.json), mapping leftovers with the unattended Operator."""
+    from .operator import reset_terminal
+    from .run import FormCheckJob
+
+    reset_terminal()
+    try:
+        application = Application.find(_ws(workspace), ref)
+        if application.applies_by_email:
+            raise JobapplyError(f"{application.slug} applies by email; there is no Form to check.")
+        job = FormCheckJob(application)
+        job.run()
+    except JobapplyError as exc:
+        _fail(exc)
+    for line in job.summary_lines():
+        typer.echo(line)
+    if job.error:
+        raise typer.Exit(code=1)
+    typer.echo(f"Field map: {application.field_map_path}")
 
 
 @app.command()
@@ -251,7 +284,7 @@ def back(
     explanation = {
         "email": "removed email.md; the email will be composed again",
         "fill": "cleared the filled marker; the form will be filled again",
-        "scan": "removed form-fields.json; the form will be scanned again",
+        "scan": "removed form-fields.json; the Form will be checked again",
         "render": "removed the PDFs in out/; they will be rendered again",
         "letter": 'set "draft": true in cover-letter.json; edit it and set draft to false again',
         "fetch": "removed the snapshot; the posting will be fetched again (posting.json kept)",

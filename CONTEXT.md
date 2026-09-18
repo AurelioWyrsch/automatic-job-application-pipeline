@@ -20,6 +20,14 @@ _Avoid_: job description site, job ad, listing
 The web page where the Application is actually submitted. May live on a different domain than the Posting and may sit behind a login. An employer that takes applications by email has no Form; the Application then names the address (`mailto:`) and is sent as an email with the Dossier attached.
 _Avoid_: job application site, ATS page, portal
 
+**Open Form**:
+A Form whose fields can be reached without any login, as a visitor with no session would see them. Only an Open Form is filled by the tool without the applicant opening the browser first.
+_Avoid_: public form, unauthenticated form
+
+**Gated Form**:
+A Form that shows a login, an account creation or no fillable fields to a visitor without a session, even when the applicant's stored login would get through. The applicant opens it themselves; the tool only helps on request.
+_Avoid_: private form, login form, form behind a wall
+
 **Attachment**:
 A static document (degree, certificate, reference letter) that is uploaded with an Application but never generated.
 _Avoid_: additional document, extra file
@@ -66,8 +74,12 @@ The single PDF an employer receives when one upload has to carry everything: Cov
 _Avoid_: merged PDF, bundle, combined file
 
 **Operator**:
-The external program `jobapply run` starts to complete a judgment file (`posting.json`, `cover-letter.json`) in the same terminal: today a coding agent running the repo's skills, named by `operator` in the Workspace `config.json`. The applicant still reviews what it wrote before the next step.
+The external program `jobapply run` starts to complete a judgment file (`posting.json`, `cover-letter.json`, `form-fields.json`): today a coding agent running the repo's skills, named in the Workspace `config.json`. It runs **interactive** for the Cover Letter interview, in the applicant's terminal, and **unattended** for extraction and field mapping, where only its result is seen. The applicant still reviews what it wrote before the next step.
 _Avoid_: agent, assistant, LLM
+
+**Form Check**:
+The unattended visit to the Form, as a visitor without a session, that classifies it as an Open Form or a Gated Form and, for an Open Form, produces the Field Map, with the Operator mapping whatever the Synonym Table missed. Runs while the applicant is busy with the Cover Letter.
+_Avoid_: pre-scan, background scan, form probe
 
 **Workspace**:
 The directory holding one applicant's private data — Profile, Attachments, Applications, browser state and Template overrides — kept separate from the tool's own code.

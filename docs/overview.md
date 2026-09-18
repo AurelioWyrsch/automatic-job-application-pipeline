@@ -8,13 +8,14 @@ One page to find your way back into the project. Details: [data-files.md](data-f
 |---|---|
 | `jobapply init <dir>` | Create a Workspace with the fictional example data |
 | `jobapply login` | Open the Workspace's own Chrome profile to log in to a job site (session kept in `.browser/`) |
-| `jobapply new <url>` | Fetch a Posting, propose company/role/form URL, create `applications/<slug>/` with `application.json`, the Snapshot and `posting.json` |
+| `jobapply new <url>` | Fetch a Posting, create `applications/<slug>/` from what the page says (no questions), save the Snapshot, then complete `posting.json` with the unattended Operator |
 | `jobapply fetch <slug>` | Re-download the Posting → `snapshot.html/.md`, refill what it can in `posting.json` |
 | `jobapply render <slug>` | CV, cover letter and Dossier PDFs → `out/`; blocks on Required Fields, warns on Recommended ones |
-| `jobapply scan <slug>` | Open the Form in the browser → `form-fields.json` (the Field Map) |
+| `jobapply check <slug>` | The Form Check: visit the Form without your login, classify it Open or Gated, write `form-fields.json` (the Field Map) and map leftovers with the unattended Operator |
+| `jobapply scan <slug>` | Open the Form in the browser with your login → `form-fields.json`; for Gated Forms and further pages |
 | `jobapply fill <slug>` | Fill the mapped fields in the Form; never submits |
 | `jobapply email <slug>` | `mailto:` Postings only: compose `email.md`, open the mail client (replaces scan/fill) |
-| `jobapply run <slug>` | Walk all steps, pausing where you must act; re-run to resume |
+| `jobapply run [<slug>\|<url>]` | Walk all steps, pausing only where you must act; a URL starts a new Application, nothing picks one; re-run to resume |
 | `jobapply back <slug>` | Undo the last completed step |
 | `jobapply status [slug]` | Which steps are done, plus convention warnings |
 | `jobapply list` | Application slugs |
@@ -28,9 +29,9 @@ Five skills belong to the tool (`.agents/skills/`, symlinked from `.claude/skill
 |---|---|---|---|
 | `setup-workspace` | Workspace | – | places `photo.jpg`, `sources/`, `attachments/`; runs `init` if needed; hands over to `import-documents` |
 | `import-documents` | Workspace | PDFs in `sources/`, `attachments/` | `profile/*.json`, `cover-letter-fixed.json`, `attachments/manifest.json`, `config.json` |
-| `extract-posting <slug>` | Application | `snapshot.md/html` | `posting.json`; hands over to `draft-cover-letter` |
-| `draft-cover-letter <slug>` | Application | `posting.json`, `profile/*.json`, `cover-letter-fixed.json` | `cover-letter.json` (`intro`, `body`, `draft: false`) |
-| `map-fields <slug>` | Application | `form-fields.json`, `profile/*.json`, `posting.json` | `form-fields.json` (`value` targets), `field-synonyms.json` |
+| `extract-posting <slug>` | Application | `snapshot.md/html` | `posting.json`; corrects `application.json` (`form_url`, company, role, language) when the tool guessed poorly. Unattended |
+| `draft-cover-letter <slug>` | Application | `posting.json`, `profile/*.json`, `cover-letter-fixed.json` | `cover-letter.json` (`intro`, `body`); shows the posting facts first for review. Interactive |
+| `map-fields <slug>` | Application | `form-fields.json`, `profile/*.json`, `posting.json` | `form-fields.json` (`value` targets, `note` on fields left to you), `field-synonyms.json`. Unattended, inside the Form Check |
 
 ## Which files need your input
 
@@ -41,7 +42,7 @@ Workspace level, once:
 | `profile/` (`profile.json`, `experience.json`, `education.json`, `skills.json`; ADR 0005) | Yes, entirely: the example data is fictional | `import-documents`, then you |
 | `cover-letter-fixed.json` | Yes: `about_me` and `closing` (the fixed half, every Language in one file); `style`/`letter_style`/`accent` for the look of the PDFs. Subject/salutation patterns and `email_body` are usable defaults | `import-documents`, then you |
 | `attachments/manifest.json` | Yes, if you have attachments: one entry per PDF (`kind`, `date`, `title`) | `import-documents` |
-| `config.json` | Mostly fine as shipped. Check `default_language`, `editor`, `operator` (the program `[a]` starts at the letter step), `home_country`; `profile_fields` only when not applying in CH | you |
+| `config.json` | Mostly fine as shipped. Check `default_language`, `editor`, `operator` and `operator_unattended` (the interactive and the unattended Operator commands), `home_country`; `profile_fields` only when not applying in CH | you |
 | `field-synonyms.json` | No; grows over time | `map-fields` |
 | `photo.jpg` | Recommended Field: warns when missing | `setup-workspace` |
 
@@ -50,9 +51,9 @@ Per Application, created by `jobapply new`:
 | File | Needs input? |
 |---|---|
 | `application.json` | Check `language`, `form_url`, `attachments`; optionally `style`, `letter_style`, `cover_letter: false`, `profile_overrides` |
-| `posting.json` | Yes: `new`/`fetch` extract only what they can; `extract-posting` completes contact, address and requirements |
-| `cover-letter.json` | Yes: `draft-cover-letter` writes `intro` (one sentence naming the role, rendered in the same paragraph as the fixed `about_me`) and `body` (the requirements), and sets `draft: false` |
-| `form-fields.json` | After `scan`: every `value: null` needs a target → `map-fields` |
+| `posting.json` | Review: `new`/`fetch` extract only what they can; `extract-posting` completes contact, address and requirements unattended, and `draft-cover-letter` shows the result before the interview |
+| `cover-letter.json` | Yes: `draft-cover-letter` writes `intro` (one sentence naming the role, rendered in the same paragraph as the fixed `about_me`) and `body` (the requirements); `[d]` in `run` sets `draft: false` |
+| `form-fields.json` | After the Form Check: fields with `value: null` and a `note` are yours to answer in the browser; `"gated": true` means the Form needs your login |
 | `snapshot.*`, `email.md`, `out/` | No; outputs |
 
 ## How it chains
@@ -62,24 +63,26 @@ jobapply init ──► setup-workspace ──► import-documents
                    (photo, sources/,     (profile/, cover-letter-fixed.json,
                     attachments/)         manifest.json, config.json)
 
-jobapply new <url> ──► application.json, snapshot.*, posting.json
+jobapply run <url> ──► application.json, snapshot.*, posting.json          no questions asked
         │
         ▼
-  extract-posting <slug> ──► posting.json complete                   [a] in run starts it
-        │  hands over
-        ▼
-  draft-cover-letter <slug> ──► cover-letter.json (draft: false)     "letter" step done
+  extract-posting <slug> ──► posting.json complete                   unattended Operator
         │
+        ├──────────────────────────────┐
+        ▼                              ▼  (background: the Form Check)
+  draft-cover-letter <slug>      web Form: jobapply check ──► form-fields.json
+  ──► cover-letter.json               │   Open Form:  map-fields <slug> (unattended) ──► values, notes, field-synonyms.json
+        │  interactive Operator       │   Gated Form: "gated": true, nothing else
+        │  [d] marks it done          │
+        ◄──────────────────────────────┘  run waits here
         ▼
   jobapply render ──► out/ (CV, letter, Dossier)                     blocks on Required Fields
         │
-        ├─ web Form:  jobapply scan ──► form-fields.json
-        │                  │
-        │             map-fields <slug> ──► values resolved, field-synonyms.json extended
-        │                  │
-        │             jobapply fill      (you press submit)
+        ├─ Open Form:  jobapply fill      browser opens and fills at once (you press submit)
         │
-        └─ mailto:   jobapply email ──► email.md   (you attach the Dossier and send)
+        ├─ Gated Form: [f] opens the browser: log in, [s] scan, [f] fill, or fill it yourself
+        │
+        └─ mailto:     jobapply email ──► email.md   (you attach the Dossier and send)
 ```
 
-`jobapply run <slug>` drives the lower chain and pauses at each skill step; `status` and `back` derive progress from which of these files exist, never from a state file ([data-files.md](data-files.md#how-progress-is-derived)).
+`jobapply run` drives the lower chain and pauses only at the interview, the PDF check and the browser; `status` and `back` derive progress from which of these files exist, never from a state file ([data-files.md](data-files.md#how-progress-is-derived)).

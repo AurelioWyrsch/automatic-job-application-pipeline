@@ -20,26 +20,27 @@ Then fill the workspace — by hand (see below) or with the `/setup-workspace` s
 jobapply run
 ```
 
-`run` without a slug lists your open applications to continue, or asks for a posting URL to start a new one: it fetches the page, proposes company, role and form URL for you to confirm, then works through every step and stops only where you're needed. `jobapply` finds `./workspace` automatically when you run it from the project folder; elsewhere pass `--workspace <dir>` or set `JOBAPPLY_WORKSPACE`.
+`jobapply run <posting-url>` starts an application from a posting and asks nothing: it fetches the page, names the folder from what the page says, has your Operator read the posting, then works through every step and stops only where you're needed. `run` without an argument lists your open applications to continue, or asks for the URL. `jobapply` finds `./workspace` automatically when you run it from the project folder; elsewhere pass `--workspace <dir>` or set `JOBAPPLY_WORKSPACE`.
 
 ## How a run goes
 
 | Step   | Who        | What happens                                                                                                                                                                                                                    |
 | ------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| new    | you        | `run` asks for the posting URL, fetches it and proposes company, role and form URL (from the page's JSON-LD, title or apply link); you confirm or correct them and choose the language                                          |
+| new    | tool       | `run <url>` fetches the posting and takes company, role and form URL from the page (JSON-LD, title, apply link); the language is your `default_language`. Nothing is asked; a bare page names the folder after the site       |
 | fetch  | tool       | saves a snapshot of the posting (HTML + readable text) and extracts what it can into `posting.json` — done together with `new`; `jobapply fetch` re-fetches                                                                     |
-| letter | you        | complete `posting.json`, write the job-specific half of the letter in `cover-letter.json` — `[a]` starts your Operator (Claude Code running `/extract-posting`, which hands over to `/draft-cover-letter`) right in the terminal, or do it by hand; `[e]` opens the letter in your editor, `[d]` marks it done |
+| extract | Operator  | the unattended Operator (`claude -p /extract-posting`) completes `posting.json` (contact, address, requirements) and corrects the form URL when the page's apply link was missed; you see one table                          |
+| check  | tool + Operator | in the background, while you write the letter: the Form Check visits the form **without your login**, detects the fields and has the unattended Operator map what the synonym table missed (`form-fields.json`). A form that shows a login or no fields is *gated* |
+| letter | you + Operator | your Operator starts `/draft-cover-letter` right in the terminal: it shows the posting facts, offers one sentence per requirement, you pick and confirm; then `[d]` marks the letter done. Any content in `cover-letter.json` brings the `[a]/[e]/[d]` menu back instead, so you can also write by hand |
 | render | tool       | CV, cover letter and the Dossier (letter, CV, then all attachments in one PDF) into `out/`; offers to open them, `[r]` re-renders after edits                                                                                     |
 | email  | tool + you | only when `form_url` is a `mailto:` address: composes `email.md` and opens it in your mail client; you attach the Dossier and send — replaces scan, fill and submit                                                              |
-| scan   | tool + you | opens the form in Chrome, detects every field, guesses what goes where, writes `form-fields.json`; you fix what it missed (or the `/map-fields` skill)                                                                          |
-| fill   | tool       | fills the fields and uploads the files, then leaves the browser open                                                                                                                                                            |
+| fill   | tool       | open form: Chrome opens on the form and fills the fields and uploads at once, then stays open; the fields that are yours (consent, salary, start date) were listed just before. Gated form: `[f]` opens Chrome for you to log in, `[s]` scan, `[f]` fill, or you upload the PDFs from `out/` yourself |
 | submit | you        | review the form and press the button                                                                                                                                                                                            |
 
 Quit at any pause with `q`; `jobapply run <slug>` resumes at the same step, because progress is read from the files in the application folder. `jobapply back <slug>` undoes the last completed step. `jobapply status` shows every application, with what still blocks `render` (an empty required field) and what convention warns about.
 
-Each step also exists as its own command (`new`, `fetch`, `render`, `scan`, `fill`, `email`) if you'd rather drive them yourself; `jobapply --help` lists them. `jobapply render <slug> --only cv|cover_letter|merged` renders one document, `--keep-html` also writes the intermediate HTML into `out/`. `jobapply open <slug> [letter|posting|fields|email|folder]` opens a file in your editor (`"editor"` in `config.json`, e.g. `"code -r"`). `jobapply new <posting-url>` is all it takes to start one; `--company`, `--role`, `--form` and `--lang` skip the corresponding prompt. Any unique part of a slug works as the argument, e.g. `jobapply run acme`.
+Each step also exists as its own command (`new`, `fetch`, `check`, `render`, `scan`, `fill`, `email`) if you'd rather drive them yourself; `jobapply --help` lists them. `jobapply render <slug> --only cv|cover_letter|merged` renders one document, `--keep-html` also writes the intermediate HTML into `out/`. `jobapply open <slug> [letter|posting|fields|email|folder]` opens a file in your editor (`"editor"` in `config.json`, e.g. `"code -r"`). `jobapply new <posting-url>` creates one without running it; `--company`, `--role`, `--form` and `--lang` override what the page says. Any unique part of a slug works as the argument, e.g. `jobapply run acme`.
 
-`scan` and `fill` act on whatever page the browser is showing and can be repeated, so multi-page forms are handled page by page (`[s]` scan, `[f]` fill, `[q]` quit inside the session). The browser profile is persistent, so a login survives between runs.
+`scan` and `fill` act on whatever page the browser is showing and can be repeated, so multi-page forms are handled page by page (`[s]` scan, `[f]` fill, `[q]` quit inside the session). The browser profile is persistent, so a login survives between runs. The Form Check deliberately does not use it: a form you can only reach logged in is gated, and you open it yourself.
 
 ## Your workspace
 
@@ -91,11 +92,11 @@ The judgment steps are handled by skills in `.agents/skills/`, written for any c
 
 Three take an application slug:
 
-- `extract-posting` — completes `posting.json` from the snapshot (contact, address, requirements), then hands over to `draft-cover-letter`
-- `draft-cover-letter` — offers one sentence per posting requirement (or a question where your profile is silent), lets you pick and confirm three to five, then drafts `intro`/`body` in `cover-letter.json` as plain prose (leaves `draft: true`) and opens it in your editor
-- `map-fields` — resolves unmatched fields in `form-fields.json` and teaches the Synonym Table
+- `extract-posting` — completes `posting.json` from the snapshot (contact, address, requirements) and corrects `application.json` where the tool guessed poorly; runs unattended
+- `draft-cover-letter` — shows the posting facts for review, offers one sentence per posting requirement (or a question where your profile is silent), lets you pick and confirm three to five, then drafts `intro`/`body` in `cover-letter.json` as plain prose (leaves `draft: true`) and opens it in your editor
+- `map-fields` — resolves unmatched fields in `form-fields.json`, notes which ones are yours, and teaches the Synonym Table; runs unattended inside the Form Check
 
-In Claude Code that's `/extract-posting <slug>` etc. — or press `[a]` at the letter step and `jobapply run` starts it for you (`"operator"` in `config.json`, see `docs/adr/0004`). That value is the full command line, so model, effort and permissions are yours to set there, e.g. `claude "/{skill} {slug}" --model sonnet --effort medium --add-dir {tool} --allowedTools Bash,Read,Write,Edit`; set it to `""` to go back to running the skills yourself. The CLI itself contains no LLM and needs no API key; see `docs/adr/0001`.
+In Claude Code that's `/extract-posting <slug>` etc. — but `jobapply run` starts them for you: `"operator"` in `config.json` is the interactive command (the letter interview), `"operator_unattended"` the one for `extract-posting` and `map-fields` (`claude -p …`), see `docs/adr/0004`. Each value is the full command line, so model, effort and permissions are yours to set there, e.g. `claude "/{skill} {slug}" --model sonnet --effort medium --add-dir {tool} --allowedTools Bash,Read,Write,Edit`; set one to `""` to run that skill yourself (`[a]` at the letter step is then the hint, and the Form Check leaves unmatched fields for you). The CLI itself contains no LLM and needs no API key; see `docs/adr/0001`.
 
 ## Vocabulary and decisions
 
@@ -111,4 +112,4 @@ pip install -e '.[dev]'
 pytest
 ```
 
-Chrome-dependent paths (PDF rendering, scan/fill) are not covered by the unit tests; try them against a local HTML form.
+Chrome-dependent paths (PDF rendering, the Form Check, scan/fill) are not covered by the unit tests; try them against a local HTML form (`jobapply check <slug>` with a `file://` form URL).

@@ -8,6 +8,7 @@ currently showing, so multi-page forms are handled one page at a time.
 from __future__ import annotations
 
 import sys
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,7 @@ from .workspace import Workspace
 from .errors import JobapplyError
 from .fields_js import DETECT_FIELDS_JS
 from .matching import match_field
+from .posting import looks_like_login_wall
 
 STORED_FIELD_KEYS = (
     "selector", "type", "label", "hints", "placeholder", "name", "id",
@@ -223,6 +225,100 @@ def _pick_option(options: list[dict[str, str]], wanted: str) -> dict[str, str] |
     return None
 
 
+# -- the Form Check ---------------------------------------------------------------
+
+
+@dataclass
+class FormCheck:
+    """What the Form Check found: a Gated Form (with the reason) or an Open Form with counts."""
+
+    url: str
+    gated_reason: str = ""
+    fields: int = 0
+    matched: int = 0
+
+    @property
+    def gated(self) -> bool:
+        return bool(self.gated_reason)
+
+    @property
+    def unmatched(self) -> int:
+        return self.fields - self.matched
+
+    def summary(self) -> str:
+        if self.gated:
+            return f"Form: gated ({self.gated_reason}); fill it yourself"
+        return f"Form: open, {self.fields} fields, {self.matched} mapped, {self.unmatched} unmatched"
+
+
+def classify_form(requested_url: str, final_url: str, fields: list[dict[str, Any]]) -> str:
+    """Why a visitor without a session cannot fill this Form, or "" for an Open Form."""
+    if looks_like_login_wall(requested_url, final_url):
+        return f"login page at {final_url}"
+    if any((f.get("type") or "").lower() == "password" for f in fields):
+        return "the page asks for a password"
+    if not fields:
+        return "no fillable fields on the page"
+    return ""
+
+
+def record_form_check(app: Application, entry: dict[str, Any] | None, gated_reason: str) -> FormCheck:
+    """Write the Form Check's finding into the Field Map: the scanned page, or no pages and `gated`."""
+    if gated_reason:
+        app.save_field_map({"pages": [], "gated": True, "checked_at": _now(), "reason": gated_reason})
+        return FormCheck(url=entry["url"] if entry else app.data.get("form_url", ""), gated_reason=gated_reason)
+    assert entry is not None
+    field_map = merge_page(app.field_map(), entry)
+    field_map.pop("gated", None)
+    field_map.pop("reason", None)
+    field_map["checked_at"] = _now()
+    app.save_field_map(field_map)
+    fields = entry["fields"]
+    return FormCheck(url=entry["url"], fields=len(fields), matched=sum(1 for f in fields if f.get("value")))
+
+
+def form_check(app: Application) -> FormCheck:
+    """Visit the Form URL in a fresh headless context, without the Workspace's browser profile:
+    what a visitor with no session sees decides Open or Gated (ADR 0004 amendment)."""
+    from playwright.sync_api import Error as PlaywrightError, sync_playwright
+
+    url = app.data.get("form_url")
+    if not url:
+        raise JobapplyError("application.json has no form_url")
+    if app.applies_by_email:
+        raise JobapplyError(f"{app.slug} applies by email ({app.application_email}); there is no Form to check.")
+    channel = (app.workspace.config.get("browser") or {}).get("channel", "chrome")
+    with sync_playwright() as p:
+        browser = p.chromium.launch(channel=channel, headless=True,
+                                    ignore_default_args=["--enable-automation"],
+                                    args=["--disable-blink-features=AutomationControlled"])
+        page = browser.new_page()
+        try:
+            try:
+                page.goto(url, wait_until="networkidle", timeout=45_000)
+            except PlaywrightError:
+                page.goto(url, wait_until="domcontentloaded", timeout=45_000)
+        except PlaywrightError as exc:
+            browser.close()
+            return record_form_check(app, None, f"could not load {url}: {str(exc).splitlines()[0]}")
+        entry = scan_page(page, app)
+        final_url = page.url
+        browser.close()
+    return record_form_check(app, entry, classify_form(url, final_url, entry["fields"]))
+
+
+def fields_left_to_applicant(app: Application) -> list[str]:
+    """Labels of fields the Field Map leaves to the applicant, with the mapper's note when it left one."""
+    lines = []
+    for page in app.field_map().get("pages", []):
+        for f in page.get("fields", []):
+            if f.get("value"):
+                continue
+            label = f.get("label") or f.get("name") or f.get("selector")
+            lines.append(f"{label}: {f['note']}" if f.get("note") else label)
+    return lines
+
+
 # -- the interactive session ---------------------------------------------------------
 
 
@@ -271,7 +367,9 @@ def _browser_was_closed(exc: Exception) -> bool:
     return "has been closed" in str(exc)
 
 
-def form_session(app: Application, start_with: str) -> None:
+def form_session(app: Application, start_with: str, *, wait_for_page: bool = True) -> None:
+    """Open the Form headed on the Workspace profile and scan or fill it. With `wait_for_page`
+    the applicant first logs in and navigates; an Open Form is worked on as soon as it loads."""
     from playwright.sync_api import Error as PlaywrightError, sync_playwright
 
     url = app.data.get("form_url")
@@ -285,8 +383,14 @@ def form_session(app: Application, start_with: str) -> None:
         page = context.pages[0] if context.pages else context.new_page()
         page.goto(url, wait_until="domcontentloaded")
         typer.echo(f"Browser open at {url}")
-        typer.echo("Log in and navigate to the form page if needed. Nothing is ever submitted by this tool.")
-        _prompt("Press Enter when the page to work on is showing")
+        if wait_for_page:
+            typer.echo("Log in and navigate to the form page if needed. Nothing is ever submitted by this tool.")
+            _prompt("Press Enter when the page to work on is showing")
+        else:
+            try:
+                page.wait_for_load_state("networkidle", timeout=20_000)
+            except PlaywrightError:
+                pass
 
         action = start_with
         try:
@@ -343,6 +447,9 @@ def _do_fill(page, app: Application) -> None:
 
 
 def _prompt(text: str, default: str = "") -> str:
+    from .operator import reset_terminal
+
+    reset_terminal()
     typer.echo(text, nl=False)
     typer.echo(" ", nl=False)
     sys.stdout.flush()

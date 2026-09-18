@@ -8,7 +8,8 @@
   },
   "editor": "xdg-open",
   "operator": "claude \"/{skill} {slug}\" --add-dir {tool} --allowedTools Bash,Read,Write,Edit",
-  "_comment_operator": "The program `jobapply run` starts at the letter step when you press [a] (docs/adr/0004). {skill} and {slug} name the skill and the Application, {tool} is the checkout holding .agents/skills. Keep the prompt before --allowedTools (it is variadic). \"\" disables it; then run the skills in your agent yourself.",
+  "operator_unattended": "claude -p \"/{skill} {slug}\" --add-dir {tool} --allowedTools Bash,Read,Write,Edit",
+  "_comment_operator": "The Operator (docs/adr/0004): `operator` is the interactive session `jobapply run` starts for the letter interview (draft-cover-letter); `operator_unattended` runs extract-posting and map-fields with no one watching (claude -p). {skill} and {slug} name the skill and the Application, {tool} is the checkout holding .agents/skills. Keep the prompt before --allowedTools (it is variadic). \"\" disables a mode; then run that skill in your agent yourself.",
   "_comment_editor": "Command `jobapply open` and the [e] key in `run` use to open a file, e.g. \"code -r\" for VS Code.",
   "profile_fields": {
     "required": [

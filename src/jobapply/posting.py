@@ -15,7 +15,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from typing import Any, Callable
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 
 from bs4 import BeautifulSoup, Tag
 
@@ -23,7 +23,6 @@ from .application import Application
 from .errors import JobapplyError
 from .workspace import Workspace
 
-Ask = Callable[[str, str | None], str]
 Download = Callable[[str], str]
 
 
@@ -279,7 +278,6 @@ def fetch_posting(app: Application) -> FetchResult:
 def new_application(
     workspace: Workspace,
     posting_url: str,
-    ask: Ask,
     *,
     download: Download | None = None,
     company: str | None = None,
@@ -287,26 +285,30 @@ def new_application(
     form_url: str | None = None,
     language: str | None = None,
 ) -> Application:
-    """Fetch the Posting, propose company / role / Form URL for confirmation, create the Application.
+    """Fetch the Posting and create the Application from what the page says, asking nothing.
 
-    Explicit keyword values are taken as confirmed and not asked. The Application is
-    born with its Snapshot, so `fetch` is already done. posting.json keeps the page's
-    own wording where the page had any, even if the applicant shortened a name for the folder.
+    Company, role and Form URL come from the page (JSON-LD, title, apply link); a page that
+    yields neither company nor role names the folder after the site's host, and the
+    unattended `extract-posting` corrects application.json afterwards. The Language is the
+    Workspace default. Explicit keyword values win. The Application is born with its
+    Snapshot, so `fetch` is already done.
     """
     existing = Application.find_by_posting_url(workspace, posting_url)
     if existing:
         raise JobapplyError(f"This Posting already has an Application: {existing.slug}")
     html = (download or _downloader(workspace))(posting_url)
     proposal = propose(html, posting_url, workspace.apply_labels())
-    company = company or ask("Company", proposal.company or None)
-    role = role or ask("Role / job title", proposal.role or None)
-    form_url = form_url or ask("Form URL (where you apply)", proposal.form_url)
-    language = language or ask("Language of the documents", workspace.default_language)
+    company = company or proposal.company
+    role = role or proposal.role
+    if not company and not role:
+        company = urlsplit(posting_url).hostname or "posting"
+    form_url = form_url or proposal.form_url
+    language = language or workspace.default_language
     app = Application.create(workspace, company=company, role=role, language=language,
                              posting_url=posting_url, form_url=form_url)
     posting = app.posting()
-    posting["company"] = proposal.company or company
-    posting["role"] = proposal.role or role
+    posting["company"] = proposal.company
+    posting["role"] = proposal.role
     if app.applies_by_email and not posting["contact"].get("email"):
         posting["contact"]["email"] = app.application_email
     app.save_posting(posting)
