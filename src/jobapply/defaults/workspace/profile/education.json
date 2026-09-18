@@ -1,0 +1,23 @@
+{
+  "_comment": "Education, newest first. Same string and date rules as profile.json.",
+  "education": [
+    {
+      "start": "2025-09",
+      "end": "2027-09",
+      "institution": "Hochschule Luzern",
+      "location": {"de": "Luzern, Schweiz", "en": "Lucerne, Switzerland"},
+      "degree": "Master of Science in Applied Information and Data Science",
+      "bullets": [
+        {"de": "Schwerpunkt Machine Learning und Datenvisualisierung", "en": "Focus on machine learning and data visualisation"}
+      ]
+    },
+    {
+      "start": "2021-09",
+      "end": "2025-09",
+      "institution": "Fachhochschule Nordwestschweiz",
+      "location": {"de": "Windisch, Schweiz", "en": "Windisch, Switzerland"},
+      "degree": "Bachelor of Science in Business Information Technology",
+      "bullets": []
+    }
+  ]
+}

@@ -90,7 +90,7 @@ class Resolver:
         if kind == "literal":
             return arg
         if kind == "profile":
-            return self._format(self._path(self.profile, arg, "profile.json"), field)
+            return self._format(self._path(self.profile, arg, self.app.workspace.profile_file(arg)), field)
         if kind == "posting":
             return self._format(self._path(self.posting, arg, "posting.json"), field)
         if kind == "document":

@@ -1,6 +1,17 @@
 import json
 
 from jobapply.preflight import preflight
+from jobapply.workspace import PROFILE_FILES
+
+
+def _write_profile(workspace, profile):
+    """Write a merged Profile back into the four files, each keeping the keys it holds."""
+    for name in PROFILE_FILES:
+        path = workspace.profile_dir / name
+        data = json.loads(path.read_text(encoding="utf-8"))
+        for key in [k for k in data if not k.startswith("_")]:
+            data[key] = profile[key]
+        path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
 
 
 def _set_profile(workspace, **changes):
@@ -11,7 +22,7 @@ def _set_profile(workspace, **changes):
         for part in parents:
             node = node[part]
         node[last] = value
-    (workspace.root / "profile.json").write_text(json.dumps(profile), encoding="utf-8")
+    _write_profile(workspace, profile)
 
 
 def test_complete_example_profile_passes(application):
@@ -37,8 +48,8 @@ def test_missing_recommended_field_is_a_warning(workspace, application):
 def test_field_lists_come_from_config(workspace, application):
     workspace.config["profile_fields"] = {"required": ["personal.permit"], "recommended": []}
     report = preflight(application)
-    assert report.errors == ["profile.json: required field 'personal.permit' is empty"]
-    assert not any("profile.json" in w for w in report.warnings)
+    assert report.errors == ["profile/profile.json: required field 'personal.permit' is empty"]
+    assert not any("profile/" in w for w in report.warnings)
 
 
 def test_render_refuses_a_profile_with_errors(workspace, application):
@@ -65,7 +76,7 @@ def test_eszett_in_german_text_is_a_warning(workspace, application):
     }), encoding="utf-8")
     warnings = [w for w in preflight(application).warnings if "ß" in w]
     assert len(warnings) == 1
-    assert "profile.json" in warnings[0] and "cover-letter.json" in warnings[0]
+    assert "profile/" in warnings[0] and "cover-letter.json" in warnings[0]
 
 
 def test_eszett_is_ignored_outside_german(workspace):

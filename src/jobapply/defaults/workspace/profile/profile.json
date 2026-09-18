@@ -1,0 +1,27 @@
+{
+  "_comment": "Any string may be a plain string or a language map {\"de\": ..., \"en\": ...}. Dates are ISO (YYYY-MM or YYYY-MM-DD). Empty values and empty lists are hidden by the templates. The Profile is these four files merged: profile.json, experience.json, education.json, skills.json (ADR 0005).",
+  "first_name": "Mara",
+  "last_name": "Muster",
+  "photo": "photo.png",
+  "signature": null,
+  "contact": {
+    "street": "Musterweg 12",
+    "postal_code": "8000",
+    "city": "Zürich",
+    "country": {"de": "Schweiz", "en": "Switzerland"},
+    "phone": "+41 79 000 00 00",
+    "email": "mara.muster@example.com",
+    "portfolio": "https://mara-muster.example.com",
+    "linkedin": "https://www.linkedin.com/in/mara-muster",
+    "github": "https://github.com/mara-muster"
+  },
+  "personal": {
+    "salutation": {"de": "Frau", "en": "Ms"},
+    "birth_date": "1998-04-12",
+    "nationality": {"de": "Schweizerin", "en": "Swiss"},
+    "permit": "",
+    "marital_status": ""
+  },
+  "summary": {"de": "Masterstudentin in Applied Information and Data Science mit Berufserfahrung in der Finanzbranche. Ich suche eine Einstiegsmöglichkeit im Bereich Data Science mit 40–60 % Pensum.", "en": "Master's student in Applied Information and Data Science with work experience in the financial industry, looking for an entry-level data science role at 40–60 %."},
+  "interests": {"de": "Bergsteigen, Fotografie, Schach", "en": "Mountaineering, photography, chess"}
+}

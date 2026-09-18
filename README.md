@@ -1,6 +1,6 @@
 # jobapply
 
-A job-application pipeline with an AI assistant in the steps that need judgment. Your data lives in one JSON profile in a private workspace; the CLI renders your CV and cover letter to PDF, bundles them with your certificates, and pre-fills the employer's web form in a real browser window. Where rules are not enough — reading the posting, drafting the letter, mapping an unfamiliar form, importing your existing documents — a coding agent (Claude Code or any agent that reads `SKILL.md` files) takes over through the [skills](#agent-skills) shipped in this repo, and writes its result into a file you review.
+A job-application pipeline with an AI assistant in the steps that need judgment. Your data lives in a few JSON files in a private workspace; the CLI renders your CV and cover letter to PDF, bundles them with your certificates, and pre-fills the employer's web form in a real browser window. Where rules are not enough — reading the posting, drafting the letter, mapping an unfamiliar form, importing your existing documents — a coding agent (Claude Code or any agent that reads `SKILL.md` files) takes over through the [skills](#agent-skills) shipped in this repo, and writes its result into a file you review.
 
 **It never presses submit.** Every step is a command you run; between steps you check and edit files; at the end you review the form and send it yourself. The CLI itself makes no LLM calls and needs no API key.
 
@@ -48,8 +48,9 @@ Everything personal lives in the workspace and is git-ignored in this repo; keep
 ```
 workspace/
   config.json              default language, extra language packs, browser channel, required/recommended profile fields, Style and accent colour
-  profile.json             you: contact, personal details, summary, experience, education, skills, languages, certifications, interests
-  photo.jpg                optional photo used on the CV (path set in profile.json); a signature image for the letter goes the same way ("signature" in profile.json)
+  profile/                 you, four files merged into one Profile: profile.json (name, contact, personal details, summary, interests),
+                           experience.json, education.json, skills.json (skills, languages, certifications)
+  photo.jpg                optional photo used on the CV (path set in profile/profile.json); a signature image for the letter goes the same way ("signature")
   cover-letter.de.json     the half of the cover letter that is the same for every job, per language
   cover-letter.en.json
   field-synonyms.json      form labels → profile fields; add a label whenever scan misses one
@@ -60,11 +61,11 @@ workspace/
   .browser/                the tool's own Chrome profile (logins)
 ```
 
-**Languages.** Any string in `profile.json` can be a plain string or a language map `{"de": "...", "en": "..."}`. Rendering fails if a translation for the application's language is missing — on purpose. Dates are ISO (`2025-01`) and formatted per language. German and English are built in; other languages are added under `"languages"` in `config.json`.
+**Languages.** Any string in the Profile files can be a plain string or a language map `{"de": "...", "en": "..."}`. Rendering fails if a translation for the application's language is missing — on purpose. Dates are ISO (`2025-01`) and formatted per language. German and English are built in; other languages are added under `"languages"` in `config.json`.
 
 **Cover letter.** The letter is assembled as: your specific `intro` → fixed `about_me` → your specific `body` → fixed `closing`. `intro` is one sentence naming the role; it and the first `about_me` paragraph are rendered as a single paragraph, so the fixed text continues the opening sentence without a line break. Everything about the requirements goes in `body`. The subject line is built from the posting (`subject_default` / `subject_with_reference`, e.g. "Bewerbung als {role}, Referenz {reference}") unless `cover-letter.json` sets its own. The salutation is built from the contact person in `posting.json` using the `salutation_named` patterns (`"Frau": "Sehr geehrte Frau {last_name}"` — Swiss letters put no comma after it), or falls back to `salutation_default`; `render` warns when no contact person is known. Markdown is allowed in paragraphs. There is no enclosure list: a form may accept fewer files than you have. A form that wants no letter at all: set `"cover_letter": false` in the application's `application.json` and the letter step is skipped.
 
-**Required and recommended fields.** `config.json` lists which `profile.json` fields must be filled before `render` produces anything (`profile_fields.required`: name, address, phone, email, nationality, education, languages) and which only trigger a warning when empty (`recommended`: photo, birth date). The defaults follow German-speaking Swiss convention ([ADR 0003](docs/adr/0003-documents-follow-swiss-convention.md)); edit the lists for another country. `render`, `run` and `status` also warn about a ß in German text.
+**Required and recommended fields.** `config.json` lists which Profile fields (dotted paths such as `contact.phone`, no file name) must be filled before `render` produces anything (`profile_fields.required`: name, address, phone, email, nationality, education, languages) and which only trigger a warning when empty (`recommended`: photo, birth date). The defaults follow German-speaking Swiss convention ([ADR 0003](docs/adr/0003-documents-follow-swiss-convention.md)); edit the lists for another country. `render`, `run` and `status` also warn about a ß in German text.
 
 **Styles.** The PDFs' look is a Style, one CSS file in `templates/styles/`: `classic` (thin rules, monochrome — the default), `bar` (HSG-style: white capitals on coloured heading bars, dates right-aligned), `bare` (ETH-style: unlabelled personal line, small-caps headings, smaller photo) and `accent` (classic with the accent colour on name, headings and dates). Choose with `"style"` in `config.json`, or per application in `application.json`; `"letter_style"` (same places) gives the cover letter its own Style, e.g. `classic` for a plain black letter next to a `bar` CV; `"accent"` in `config.json` sets the one colour. On the letter a Style only touches the subject line: `bar` and `accent` colour it, `classic` and `bare` leave the letter black, because the letter has none of the headings, photo or date columns the Styles restyle. Every Style keeps the page structure the Swiss templates share ([research](docs/research/swiss-cv-layout-and-design.md)); add your own as `workspace/templates/styles/<name>.css`.
 
@@ -87,7 +88,7 @@ Every ATS is different. Expect the first scan on a new platform to miss a few la
 The judgment steps are handled by skills in `.agents/skills/`, written for any coding agent that reads `SKILL.md` files (Claude Code finds them via `.claude/skills/`; other agents read them from `.agents/skills/` or as plain instructions). Two set up the workspace:
 
 - `setup-workspace` — asks where your photo, current CV, old cover letters and certificates go, checks the folders, then runs `import-documents`
-- `import-documents` — reads the PDFs in `sources/` and `attachments/` and fills `profile.json`, the fixed cover-letter halves, `manifest.json` and `config.json`, and asks you for any required or recommended field no document covers; existing values win, translations are flagged; run it again after adding a document
+- `import-documents` — reads the PDFs in `sources/` and `attachments/` and fills the Profile files in `profile/`, the fixed cover-letter halves, `manifest.json` and `config.json`, and asks you for any required or recommended field no document covers; existing values win, translations are flagged; run it again after adding a document
 
 Three take an application slug:
 

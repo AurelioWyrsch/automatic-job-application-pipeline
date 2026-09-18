@@ -1,11 +1,11 @@
 ---
 name: import-documents
-description: Fill profile.json, the fixed halves of the cover letter, attachments/manifest.json and config.json from the PDFs in the Workspace's sources/ and attachments/. Use when Source Documents or Attachments were placed or added, or when setup-workspace hands over. Re-runnable; existing values win.
+description: Fill the Profile files in profile/, the fixed halves of the cover letter, attachments/manifest.json and config.json from the PDFs in the Workspace's sources/ and attachments/. Use when Source Documents or Attachments were placed or added, or when setup-workspace hands over. Re-runnable; existing values win.
 ---
 
 Fill the Workspace's data files from its documents. File formats: the "Your workspace" section of [README.md](../../../README.md); vocabulary: [CONTEXT.md](../../../CONTEXT.md).
 
-1. Read `profile.json`, `config.json`, every `cover-letter.<lang>.json`, `attachments/manifest.json`, and every PDF in `sources/` and `attachments/` (your PDF reader, or `pdftotext`). Also read the tool's example Workspace, `src/jobapply/defaults/workspace/`: a value still equal to its example counts as empty.
+1. Read the four Profile files in `profile/` (`profile.json`: identity, contact, personal, summary, interests; `experience.json`; `education.json`; `skills.json`: skills, languages, certifications), `config.json`, every `cover-letter.<lang>.json`, `attachments/manifest.json`, and every PDF in `sources/` and `attachments/` (your PDF reader, or `pdftotext`). Also read the tool's example Workspace, `src/jobapply/defaults/workspace/`: a value still equal to its example counts as empty.
 2. Decide every write by these rules:
    - Empty values are filled; other values stay. A document that contradicts a kept value is a **disagreement**: reported, never applied.
    - Free-text values are language maps. Write the source's language and `en`; every translated value is **flagged**.

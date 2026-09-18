@@ -1,0 +1,30 @@
+{
+  "_comment": "Skills, languages and certifications. Same string and date rules as profile.json.",
+  "skills": [
+    {
+      "group": {"de": "Programmierung", "en": "Programming"},
+      "items": ["Python", "SQL", "R"]
+    },
+    {
+      "group": {"de": "Data Science", "en": "Data Science"},
+      "items": ["pandas", "scikit-learn", "Power BI"]
+    },
+    {
+      "group": {"de": "Werkzeuge", "en": "Tools"},
+      "items": ["Git", "Docker", "Linux"]
+    }
+  ],
+  "languages": [
+    {
+      "name": {"de": "Deutsch", "en": "German"},
+      "level": {"de": "Muttersprache", "en": "Native"}
+    },
+    {
+      "name": {"de": "Englisch", "en": "English"},
+      "level": {"de": "Verhandlungssicher (C1)", "en": "Fluent (C1)"}
+    }
+  ],
+  "certifications": [
+    {"date": "2024-03", "name": "Google Data Analytics Professional Certificate", "issuer": "Coursera"}
+  ]
+}

@@ -4,7 +4,11 @@ Layout::
 
     workspace/
       config.json            default language, language packs, browser settings
-      profile.json           the Profile
+      profile/               the Profile, four files merged into one dict (ADR 0005):
+        profile.json           identity, contact, personal, summary, interests
+        experience.json        experience
+        education.json         education
+        skills.json            skills, languages, certifications
       field-synonyms.json    the Synonym Table
       cover-letter.<lang>.json   the fixed half of the Cover Letter, per Language
       attachments/           static documents + manifest.json
@@ -28,6 +32,7 @@ from .i18n import BUILTIN_LANGUAGES, Language, deep_merge
 
 ENV_VAR = "JOBAPPLY_WORKSPACE"
 DEFAULT_DIR = "workspace"
+PROFILE_FILES = ("profile.json", "experience.json", "education.json", "skills.json")
 
 
 def _read_json(path: Path) -> Any:
@@ -93,6 +98,10 @@ class Workspace:
         return self.root / "attachments"
 
     @property
+    def profile_dir(self) -> Path:
+        return self.root / "profile"
+
+    @property
     def browser_dir(self) -> Path:
         return self.root / ".browser"
 
@@ -132,7 +141,32 @@ class Workspace:
                 for label in (pack.get("apply_labels") or [])]
 
     def profile(self) -> dict[str, Any]:
-        return _read_json(self.root / "profile.json")
+        """The Profile: the top-level keys of the four files in ``profile/``, merged (ADR 0005)."""
+        return self._profile_and_origins()[0]
+
+    def profile_file(self, dotted: str) -> str:
+        """The Workspace-relative file that holds a dotted Profile path, for messages."""
+        origins = self._profile_and_origins()[1]
+        name = origins.get(dotted.split(".")[0])
+        return f"profile/{name}" if name else "profile/"
+
+    def _profile_and_origins(self) -> tuple[dict[str, Any], dict[str, str]]:
+        profile: dict[str, Any] = {}
+        origins: dict[str, str] = {}
+        for name in PROFILE_FILES:
+            data = _read_json(self.profile_dir / name)
+            if not isinstance(data, dict):
+                raise JobapplyError(f"profile/{name} must be a JSON object")
+            for key, value in data.items():
+                if key.startswith("_"):
+                    continue
+                if key in origins:
+                    raise JobapplyError(
+                        f"Profile key {key!r} appears in both profile/{origins[key]} and profile/{name}"
+                    )
+                profile[key] = value
+                origins[key] = name
+        return profile, origins
 
     def synonyms(self) -> dict[str, Any]:
         return _read_json(self.root / "field-synonyms.json")
@@ -172,5 +206,5 @@ class Workspace:
             return None
         path = self.root / relative
         if not path.exists():
-            raise JobapplyError(f"Asset referenced in profile.json not found: {path}")
+            raise JobapplyError(f"Asset referenced in {self.profile_file('photo')} not found: {path}")
         return path

@@ -60,7 +60,7 @@ def init(
     except JobapplyError as exc:
         _fail(exc)
     typer.echo(f"Workspace created at {ws.root}")
-    typer.echo("Next: edit profile.json, cover-letter.<lang>.json, put PDFs into attachments/ and list them in attachments/manifest.json — or run the setup-workspace skill.")
+    typer.echo("Next: edit the files in profile/, cover-letter.<lang>.json, put PDFs into attachments/ and list them in attachments/manifest.json — or run the setup-workspace skill.")
 
 
 @app.command()

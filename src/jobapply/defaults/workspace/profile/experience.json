@@ -1,0 +1,26 @@
+{
+  "_comment": "Work experience, newest first. Same string and date rules as profile.json.",
+  "experience": [
+    {
+      "start": "2025-01",
+      "end": null,
+      "employer": "Beispiel AG",
+      "location": {"de": "Zürich, Schweiz", "en": "Zurich, Switzerland"},
+      "title": {"de": "Werkstudentin Data Analytics", "en": "Working Student Data Analytics"},
+      "workload": 60,
+      "bullets": [
+        {"de": "Aufbau von Power-BI-Dashboards für das Controlling", "en": "Built Power BI dashboards for the controlling team"},
+        {"de": "Automatisierung von Reports mit Python und SQL", "en": "Automated reporting with Python and SQL"}
+      ]
+    },
+    {
+      "start": "2022-09",
+      "end": "2024-12",
+      "employer": "Muster GmbH",
+      "location": {"de": "Bern, Schweiz", "en": "Bern, Switzerland"},
+      "title": {"de": "Marketing-Assistentin", "en": "Marketing Assistant"},
+      "workload": 50,
+      "bullets": []
+    }
+  ]
+}

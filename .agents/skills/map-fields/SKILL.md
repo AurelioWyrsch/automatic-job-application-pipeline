@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 Complete the Field Map for the Application named in the request (`$ARGUMENTS` in Claude Code). Target syntax and file formats: [docs/data-files.md](../../../docs/data-files.md).
 
-1. Locate the Application folder. Read `form-fields.json`, the Workspace `profile.json`, `posting.json`, `application.json` and `field-synonyms.json`.
+1. Locate the Application folder. Read `form-fields.json`, the Workspace's Profile files (`profile/*.json`; `profile:<path>` targets use the merged keys, never a file name), `posting.json`, `application.json` and `field-synonyms.json`.
 2. For every field whose `value` is `null`, decide from its `label`, `hints`, `placeholder`, `name`, `id`, `type` and `options`:
    - A Profile or Posting value exists → `profile:<path>` / `posting:<path>`.
    - A document slot → `document:cv`, `document:cover_letter`, `document:merged` (single-file inputs) or `attachments:all` (multi-file).

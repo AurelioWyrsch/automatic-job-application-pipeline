@@ -23,14 +23,15 @@ class PreflightReport:
 
 def preflight(app: Application) -> PreflightReport:
     report = PreflightReport()
+    ws = app.workspace
     profile = app.profile()
-    fields = app.workspace.config.get("profile_fields") or _bundled_profile_fields()
+    fields = ws.config.get("profile_fields") or _bundled_profile_fields()
     for dotted in fields.get("required", []):
         if _is_empty(_lookup(profile, dotted)):
-            report.errors.append(f"profile.json: required field {dotted!r} is empty")
+            report.errors.append(f"{ws.profile_file(dotted)}: required field {dotted!r} is empty")
     for dotted in fields.get("recommended", []):
         if _is_empty(_lookup(profile, dotted)):
-            report.warnings.append(f"profile.json: recommended field {dotted!r} is empty")
+            report.warnings.append(f"{ws.profile_file(dotted)}: recommended field {dotted!r} is empty")
 
     letter = app.cover_letter()
     if not app.cover_letter_waived and not letter.get("salutation") \
@@ -42,7 +43,7 @@ def preflight(app: Application) -> PreflightReport:
     if app.language_code == "de":
         lang = app.language
         texts = {
-            "profile.json": lang.resolve(profile, "profile"),
+            "profile/": lang.resolve(profile, "profile"),
             "cover-letter.json": letter,
             f"cover-letter.{lang.code}.json": lang.resolve(app.workspace.cover_letter_fixed(lang.code), "fixed"),
         }

@@ -4,6 +4,17 @@ import pytest
 
 from jobapply.errors import JobapplyError
 from jobapply.render import build_context, check_letter_ready, render_html
+from jobapply.workspace import PROFILE_FILES
+
+
+def _write_profile(workspace, profile):
+    """Write a merged Profile back into the four files, each keeping the keys it holds."""
+    for name in PROFILE_FILES:
+        path = workspace.profile_dir / name
+        data = json.loads(path.read_text(encoding="utf-8"))
+        for key in [k for k in data if not k.startswith("_")]:
+            data[key] = profile[key]
+        path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
 
 
 def _write_letter(application):
@@ -117,7 +128,7 @@ def test_marital_status_appears_only_when_set(workspace, application):
     assert "Zivilstand" not in html
     profile = workspace.profile()
     profile["personal"]["marital_status"] = "ledig"
-    (workspace.root / "profile.json").write_text(json.dumps(profile), encoding="utf-8")
+    _write_profile(workspace, profile)
     html = render_html(application, "cv.html", build_context(application))
     assert "Zivilstand" in html and "ledig" in html
 
