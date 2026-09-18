@@ -65,6 +65,10 @@ The saved copy of a Posting (raw page plus readable text) taken when the Applica
 The single PDF an employer receives when one upload has to carry everything: Cover Letter, then CV, then the selected Attachments, in that order.
 _Avoid_: merged PDF, bundle, combined file
 
+**Operator**:
+The external program `jobapply run` starts to complete a judgment file (`posting.json`, `cover-letter.json`) in the same terminal: today a coding agent running the repo's skills, named by `operator` in the Workspace `config.json`. The applicant still reviews what it wrote before the next step.
+_Avoid_: agent, assistant, LLM
+
 **Workspace**:
 The directory holding one applicant's private data — Profile, Attachments, Applications, browser state and Template overrides — kept separate from the tool's own code.
 _Avoid_: data folder, user folder

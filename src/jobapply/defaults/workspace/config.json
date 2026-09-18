@@ -10,6 +10,8 @@
   "accent": "#0f6b78",
   "_comment_style": "Look of the PDFs: classic (thin rules, monochrome), bar (HSG-style coloured heading bars, dates right), bare (ETH-style unlabelled personal line, small caps), accent (classic with the accent colour). Per application: \"style\" in application.json. letter_style (here or per application) gives the cover letter its own Style, e.g. classic for a plain black letter next to a bar CV. accent is the one colour bar/accent use.",
   "editor": "xdg-open",
+  "operator": "claude \"/{skill} {slug}\" --add-dir {tool} --allowedTools Bash,Read,Write,Edit",
+  "_comment_operator": "The program `jobapply run` starts at the letter step when you press [a] (docs/adr/0004). {skill} and {slug} name the skill and the Application, {tool} is the checkout holding .agents/skills. Keep the prompt before --allowedTools (it is variadic). \"\" disables it; then run the skills in your agent yourself.",
   "_comment_editor": "Command `jobapply open` and the [e] key in `run` use to open a file, e.g. \"code -r\" for VS Code.",
   "profile_fields": {
     "required": [

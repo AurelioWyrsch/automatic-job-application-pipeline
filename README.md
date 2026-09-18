@@ -28,7 +28,7 @@ jobapply run
 | ------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | new    | you        | `run` asks for the posting URL, fetches it and proposes company, role and form URL (from the page's JSON-LD, title or apply link); you confirm or correct them and choose the language                                          |
 | fetch  | tool       | saves a snapshot of the posting (HTML + readable text) and extracts what it can into `posting.json` — done together with `new`; `jobapply fetch` re-fetches                                                                     |
-| letter | you        | complete `posting.json`, write the job-specific half of the letter in `cover-letter.json` — by hand or with the `/extract-posting` and `/draft-cover-letter` skills; `[e]` opens the letter in your editor, `[d]` marks it done |
+| letter | you        | complete `posting.json`, write the job-specific half of the letter in `cover-letter.json` — `[a]` starts your Operator (Claude Code running `/extract-posting`, which hands over to `/draft-cover-letter`) right in the terminal, or do it by hand; `[e]` opens the letter in your editor, `[d]` marks it done |
 | render | tool       | CV, cover letter and the Dossier (letter, CV, then all attachments in one PDF) into `out/`; offers to open them, `[r]` re-renders after edits                                                                                     |
 | email  | tool + you | only when `form_url` is a `mailto:` address: composes `email.md` and opens it in your mail client; you attach the Dossier and send — replaces scan, fill and submit                                                              |
 | scan   | tool + you | opens the form in Chrome, detects every field, guesses what goes where, writes `form-fields.json`; you fix what it missed (or the `/map-fields` skill)                                                                          |
@@ -95,7 +95,7 @@ Three take an application slug:
 - `draft-cover-letter` — offers one sentence per posting requirement (or a question where your profile is silent), lets you pick and confirm three to five, then drafts `intro`/`body` in `cover-letter.json` as plain prose (leaves `draft: true`) and opens it in your editor
 - `map-fields` — resolves unmatched fields in `form-fields.json` and teaches the Synonym Table
 
-In Claude Code that's `/extract-posting <slug>` etc. The CLI itself contains no LLM and needs no API key; see `docs/adr/0001`.
+In Claude Code that's `/extract-posting <slug>` etc. — or press `[a]` at the letter step and `jobapply run` starts it for you (`"operator"` in `config.json`, see `docs/adr/0004`). The CLI itself contains no LLM and needs no API key; see `docs/adr/0001`.
 
 ## Vocabulary and decisions
 

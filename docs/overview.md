@@ -41,7 +41,7 @@ Workspace level, once:
 | `profile.json` | Yes, entirely: the example data is fictional | `import-documents`, then you |
 | `cover-letter.de.json` / `.en.json` | Yes: `about_me` and `closing` (the fixed half). Subject/salutation patterns and `email_body` are usable defaults | `import-documents`, then you |
 | `attachments/manifest.json` | Yes, if you have attachments: one entry per PDF (`kind`, `date`, `title`) | `import-documents` |
-| `config.json` | Mostly fine as shipped. Check `default_language`, `style`/`accent`, `editor`, `home_country`; `profile_fields` only when not applying in CH | you |
+| `config.json` | Mostly fine as shipped. Check `default_language`, `style`/`accent`, `editor`, `operator` (the program `[a]` starts at the letter step), `home_country`; `profile_fields` only when not applying in CH | you |
 | `field-synonyms.json` | No; grows over time | `map-fields` |
 | `photo.jpg` | Recommended Field: warns when missing | `setup-workspace` |
 
@@ -65,7 +65,7 @@ jobapply init ──► setup-workspace ──► import-documents
 jobapply new <url> ──► application.json, snapshot.*, posting.json
         │
         ▼
-  extract-posting <slug> ──► posting.json complete
+  extract-posting <slug> ──► posting.json complete                   [a] in run starts it
         │  hands over
         ▼
   draft-cover-letter <slug> ──► cover-letter.json (draft: false)     "letter" step done

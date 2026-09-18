@@ -14,6 +14,7 @@ import typer
 
 from .application import Application
 from .errors import JobapplyError
+from .operator import operator_command, run_operator
 from .posting import Ask, Download
 from .workspace import Workspace
 
@@ -137,11 +138,23 @@ def run(app: Application) -> None:
                 typer.secho(f"  still not ready: {steps['letter'].detail}", fg=typer.colors.YELLOW)
             typer.echo(f"  {app.posting_path}")
             typer.echo(f"  {app.cover_letter_path}")
-            typer.echo(f"  With your agent: /extract-posting {app.slug}  then  /draft-cover-letter {app.slug}")
-            answer = _prompt("Enter to re-check, e to open the letter in your editor, d when the letter is done, q to pause.",
-                             "Enter/e/d/q", "c")
+            operator = operator_command(app.workspace, "extract-posting", app.slug)
+            if operator is None:
+                typer.echo(f"  With your agent: /extract-posting {app.slug}  then  /draft-cover-letter {app.slug}")
+                answer = _prompt("Enter to re-check, e to open the letter in your editor, d when the letter is done, q to pause.",
+                                 "Enter/e/d/q", "c")
+            else:
+                answer = _prompt("a to run the Operator (extract-posting, then draft-cover-letter), Enter to re-check, "
+                                 "e to open the letter in your editor, d when the letter is done, q to pause.",
+                                 "a/Enter/e/d/q", "c")
             if answer == "q":
                 return
+            if answer == "a" and operator is not None:
+                typer.echo(f"  starting {operator[0]} … (quit it to come back here)")
+                code = run_operator(app, "extract-posting")
+                if code:
+                    typer.secho(f"  the Operator exited with code {code}", fg=typer.colors.YELLOW)
+                continue
             if answer == "e":
                 open_for_editing(app, "letter")
                 continue
