@@ -179,6 +179,13 @@ class Workspace:
         """The fixed half of the Cover Letter, not yet language-resolved (values may be language maps)."""
         return _read_json(self.root / FIXED_LETTER)
 
+    def look_setting(self, key: str) -> Any:
+        """A Style setting (`style`, `letter_style`, `accent`): the applicant keeps them in
+        cover-letter-fixed.json next to the document text; config.json is still honoured."""
+        path = self.root / FIXED_LETTER
+        fixed = _read_json(path) if path.exists() else {}
+        return fixed.get(key) or self.config.get(key)
+
     def attachments_manifest(self) -> list[dict[str, Any]]:
         path = self.attachments_dir / "manifest.json"
         if not path.exists():

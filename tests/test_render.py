@@ -133,10 +133,17 @@ def test_marital_status_appears_only_when_set(workspace, application):
     assert "Zivilstand" in html and "ledig" in html
 
 
-def test_style_comes_from_config_or_application(workspace, application):
+def _set_look(workspace, **settings):
+    path = workspace.root / "cover-letter-fixed.json"
+    fixed = json.loads(path.read_text(encoding="utf-8"))
+    fixed.update(settings)
+    path.write_text(json.dumps(fixed), encoding="utf-8")
+
+
+def test_style_comes_from_the_fixed_letter_file_or_application(workspace, application):
     from jobapply.errors import JobapplyError
     assert application.style == "classic"
-    workspace.config["style"] = "bar"
+    _set_look(workspace, style="bar")
     assert application.style == "bar"
     html = render_html(application, "cv.html", build_context(application))
     assert "HSG-style" in html and "--accent: #0f6b78" in html
@@ -146,9 +153,9 @@ def test_style_comes_from_config_or_application(workspace, application):
 
 
 def test_letter_can_have_its_own_style(workspace, application):
-    workspace.config["style"] = "bar"
+    _set_look(workspace, style="bar")
     assert application.letter_style == "bar"
-    workspace.config["letter_style"] = "classic"
+    _set_look(workspace, letter_style="classic")
     assert application.letter_style == "classic"
     application.data["letter_style"] = "bare"
     assert application.letter_style == "bare"

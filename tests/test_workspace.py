@@ -50,3 +50,17 @@ def test_missing_fixed_cover_letter_names_the_file(workspace):
     (workspace.root / "cover-letter-fixed.json").unlink()
     with pytest.raises(JobapplyError, match="cover-letter-fixed.json"):
         workspace.cover_letter_fixed()
+
+
+def test_style_settings_come_from_the_fixed_letter_file_before_config(workspace, application):
+    path = workspace.root / "cover-letter-fixed.json"
+    fixed = json.loads(path.read_text(encoding="utf-8"))
+    assert application.style == fixed["style"] == "classic"
+    fixed["style"], fixed["letter_style"], fixed["accent"] = "bar", "bare", "#123456"
+    path.write_text(json.dumps(fixed), encoding="utf-8")
+    workspace.config["style"] = "accent"
+    assert application.style == "bar" and application.letter_style == "bare"
+    assert workspace.look_setting("accent") == "#123456"
+    del fixed["style"], fixed["letter_style"]
+    path.write_text(json.dumps(fixed), encoding="utf-8")
+    assert application.style == "accent" and application.letter_style == "accent"

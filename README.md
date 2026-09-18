@@ -47,11 +47,11 @@ Everything personal lives in the workspace and is git-ignored in this repo; keep
 
 ```
 workspace/
-  config.json              default language, extra language packs, browser channel, required/recommended profile fields, Style and accent colour
+  config.json              default language, extra language packs, browser channel, required/recommended profile fields
   profile/                 you, four files merged into one Profile: profile.json (name, gender, contact, links, personal details, summary, interests),
                            experience.json, education.json, skills.json (skills, languages, certifications)
   photo.jpg                optional photo used on the CV (path set in profile/profile.json); a signature image for the letter goes the same way ("signature")
-  cover-letter-fixed.json  the half of the cover letter that is the same for every job, every language in one file
+  cover-letter-fixed.json  the half of the cover letter that is the same for every job, every language in one file; also the Style and accent colour of the PDFs
   field-synonyms.json      form labels → profile fields; add a label whenever scan misses one
   sources/                 your current CV and old cover letters; read by the import-documents skill, never uploaded
   attachments/             PDFs to upload with every application + manifest.json (kind, date, title)
@@ -66,7 +66,7 @@ workspace/
 
 **Required and recommended fields.** `config.json` lists which Profile fields (dotted paths such as `contact.phone`, no file name) must be filled before `render` produces anything (`profile_fields.required`: name, address, phone, email, nationality, education, languages) and which only trigger a warning when empty (`recommended`: photo, birth date). The defaults follow German-speaking Swiss convention ([ADR 0003](docs/adr/0003-documents-follow-swiss-convention.md)); edit the lists for another country. `render`, `run` and `status` also warn about a ß in German text.
 
-**Styles.** The PDFs' look is a Style, one CSS file in `templates/styles/`: `classic` (thin rules, monochrome — the default), `bar` (HSG-style: white capitals on coloured heading bars, dates right-aligned), `bare` (ETH-style: unlabelled personal line, small-caps headings, smaller photo) and `accent` (classic with the accent colour on name, headings and dates). Choose with `"style"` in `config.json`, or per application in `application.json`; `"letter_style"` (same places) gives the cover letter its own Style, e.g. `classic` for a plain black letter next to a `bar` CV; `"accent"` in `config.json` sets the one colour. On the letter a Style only touches the subject line: `bar` and `accent` colour it, `classic` and `bare` leave the letter black, because the letter has none of the headings, photo or date columns the Styles restyle. Every Style keeps the page structure the Swiss templates share ([research](docs/research/swiss-cv-layout-and-design.md)); add your own as `workspace/templates/styles/<name>.css`.
+**Styles.** The PDFs' look is a Style, one CSS file in `templates/styles/`: `classic` (thin rules, monochrome — the default), `bar` (HSG-style: white capitals on coloured heading bars, dates right-aligned), `bare` (ETH-style: unlabelled personal line, small-caps headings, smaller photo) and `accent` (classic with the accent colour on name, headings and dates). Choose with `"style"` in `cover-letter-fixed.json` (or `config.json`), or per application in `application.json`; `"letter_style"` (same places) gives the cover letter its own Style, e.g. `classic` for a plain black letter next to a `bar` CV; `"accent"` next to it sets the one colour. On the letter a Style only touches the subject line: `bar` and `accent` colour it, `classic` and `bare` leave the letter black, because the letter has none of the headings, photo or date columns the Styles restyle. Every Style keeps the page structure the Swiss templates share ([research](docs/research/swiss-cv-layout-and-design.md)); add your own as `workspace/templates/styles/<name>.css`.
 
 **Attachments.** `manifest.json` gives each PDF a `kind` (`reference`, `diploma`, `transcript`, `certificate`), a `date` and a `title` per language. New applications select all of them; remove entries from `attachments` in an application's `application.json` to leave some out. Merge order: reference letters newest first, then diplomas, transcripts, certificates.
 

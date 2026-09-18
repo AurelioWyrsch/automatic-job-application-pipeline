@@ -208,14 +208,15 @@ class Application:
 
     @property
     def style(self) -> str:
-        """The Style (templates/styles/<name>.css): application.json wins over config.json, default classic."""
-        return self.data.get("style") or self.workspace.config.get("style") or "classic"
+        """The Style (templates/styles/<name>.css): application.json wins over the Workspace
+        (cover-letter-fixed.json, then config.json), default classic."""
+        return self.data.get("style") or self.workspace.look_setting("style") or "classic"
 
     @property
     def letter_style(self) -> str:
         """The Style of the Cover Letter alone (`letter_style`); defaults to the CV's, so a coloured
         CV can go with a plain black letter."""
-        return self.data.get("letter_style") or self.workspace.config.get("letter_style") or self.style
+        return self.data.get("letter_style") or self.workspace.look_setting("letter_style") or self.style
 
     @property
     def applies_by_email(self) -> bool:

@@ -39,9 +39,9 @@ Workspace level, once:
 | File | Needs input? | Filled by |
 |---|---|---|
 | `profile/` (`profile.json`, `experience.json`, `education.json`, `skills.json`; ADR 0005) | Yes, entirely: the example data is fictional | `import-documents`, then you |
-| `cover-letter-fixed.json` | Yes: `about_me` and `closing` (the fixed half, every Language in one file). Subject/salutation patterns and `email_body` are usable defaults | `import-documents`, then you |
+| `cover-letter-fixed.json` | Yes: `about_me` and `closing` (the fixed half, every Language in one file); `style`/`letter_style`/`accent` for the look of the PDFs. Subject/salutation patterns and `email_body` are usable defaults | `import-documents`, then you |
 | `attachments/manifest.json` | Yes, if you have attachments: one entry per PDF (`kind`, `date`, `title`) | `import-documents` |
-| `config.json` | Mostly fine as shipped. Check `default_language`, `style`/`accent`, `editor`, `operator` (the program `[a]` starts at the letter step), `home_country`; `profile_fields` only when not applying in CH | you |
+| `config.json` | Mostly fine as shipped. Check `default_language`, `editor`, `operator` (the program `[a]` starts at the letter step), `home_country`; `profile_fields` only when not applying in CH | you |
 | `field-synonyms.json` | No; grows over time | `map-fields` |
 | `photo.jpg` | Recommended Field: warns when missing | `setup-workspace` |
 

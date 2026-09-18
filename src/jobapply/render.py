@@ -73,7 +73,7 @@ def build_context(app: Application) -> dict[str, Any]:
         "subject": build_subject(letter, fixed, posting),
         "attachments": attachments,
         "style": app.style,
-        "accent": ws.config.get("accent") or "#0f6b78",
+        "accent": ws.look_setting("accent") or "#0f6b78",
         "today": lang.long_date(),
         "documents": lang.pack["documents"],
         "labels": lang.pack.get("labels", {}),

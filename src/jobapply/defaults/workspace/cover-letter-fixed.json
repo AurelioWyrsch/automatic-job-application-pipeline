@@ -1,5 +1,9 @@
 {
   "_comment": "The fixed half of every cover letter, every Language in one file: each value is a language map {\"de\": ..., \"en\": ...} (a plain string is used in every Language). Markdown allowed. The specific half lives in applications/<slug>/cover-letter.json. Order in the letter: letter.intro, fixed.about_me, letter.body, fixed.closing; letter.intro (one sentence) and the first about_me paragraph form one paragraph. Subject: cover-letter.json's own \"subject\" wins; otherwise subject_with_reference when posting.reference is set, else subject_default. Salutation: cover-letter.json's own \"salutation\" wins; otherwise salutation_named[posting.contact.salutation] (\"_\" when the title is unknown) with {salutation} {first_name} {last_name}; otherwise salutation_default. email_body: the paragraphs of the covering email when the employer takes applications by email (form_url mailto:); placeholders {role}, {company}, {reference}.",
+  "style": "classic",
+  "letter_style": "",
+  "accent": "#0f6b78",
+  "_comment_style": "Look of the PDFs: classic (thin rules, monochrome), bar (HSG-style coloured heading bars, dates right), bare (ETH-style unlabelled personal line, small caps), accent (classic with the accent colour). Per application: \"style\" in application.json. letter_style (here or per application) gives the cover letter its own Style, e.g. classic for a plain black letter next to a bar CV. accent is the one colour bar/accent use.",
   "subject_default": {"de": "Bewerbung als {role}", "en": "Application for the position of {role}"},
   "subject_with_reference": {"de": "Bewerbung als {role}, Referenz {reference}", "en": "Application for the position of {role}, ref. {reference}"},
   "salutation_default": {"de": "Sehr geehrte Damen und Herren", "en": "Dear Sir or Madam,"},
@@ -8,30 +12,16 @@
     "en": {"Ms": "Dear Ms {last_name},", "Mrs": "Dear Mrs {last_name},", "Mr": "Dear Mr {last_name},", "Dr": "Dear Dr {last_name},", "_": "Dear {first_name} {last_name},"}
   },
   "about_me": {
-    "de": [
-      "Zurzeit absolviere ich den Master in Applied Information and Data Science an der Hochschule Luzern. Neben dem Studium arbeite ich als Werkstudentin im Bereich Data Analytics, wo ich Reports automatisiere und Dashboards für das Controlling aufbaue."
-    ],
-    "en": [
-      "I am currently pursuing a Master's degree in Applied Information and Data Science at the Lucerne University of Applied Sciences. Alongside my studies I work as a working student in data analytics, automating reports and building dashboards for the controlling team."
-    ]
+    "de": ["Zurzeit absolviere ich den Master in Applied Information and Data Science an der Hochschule Luzern. Neben dem Studium arbeite ich als Werkstudentin im Bereich Data Analytics, wo ich Reports automatisiere und Dashboards für das Controlling aufbaue."],
+    "en": ["I am currently pursuing a Master's degree in Applied Information and Data Science at the Lucerne University of Applied Sciences. Alongside my studies I work as a working student in data analytics, automating reports and building dashboards for the controlling team."]
   },
   "closing": {
-    "de": [
-      "Ich freue mich, Sie in einem persönlichen Gespräch kennenzulernen."
-    ],
-    "en": [
-      "I would be delighted to discuss my application with you in person."
-    ]
+    "de": ["Ich freue mich, Sie in einem persönlichen Gespräch kennenzulernen."],
+    "en": ["I would be delighted to discuss my application with you in person."]
   },
   "sign_off": {"de": "Freundliche Grüsse", "en": "Kind regards"},
   "email_body": {
-    "de": [
-      "Gerne bewerbe ich mich als {role}. Mein Motivationsschreiben, Lebenslauf und Zeugnisse finden Sie im Anhang.",
-      "Ich freue mich von Ihnen zu hören."
-    ],
-    "en": [
-      "I would like to apply for the position of {role}. Please find my cover letter, CV and references attached.",
-      "I look forward to hearing from you."
-    ]
+    "de": ["Gerne bewerbe ich mich als {role}. Mein Motivationsschreiben, Lebenslauf und Zeugnisse finden Sie im Anhang.", "Ich freue mich von Ihnen zu hören."],
+    "en": ["I would like to apply for the position of {role}. Please find my cover letter, CV and references attached.", "I look forward to hearing from you."]
   }
 }
