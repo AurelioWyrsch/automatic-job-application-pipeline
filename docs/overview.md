@@ -66,7 +66,7 @@ jobapply new <url> ──► application.json, snapshot.*, posting.json
         │
         ▼
   extract-posting <slug> ──► posting.json complete
-        │
+        │  hands over
         ▼
   draft-cover-letter <slug> ──► cover-letter.json (draft: false)     "letter" step done
         │

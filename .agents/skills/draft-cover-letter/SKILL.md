@@ -1,7 +1,6 @@
 ---
 name: draft-cover-letter
-description: Draft the specific half of an Application's cover letter into cover-letter.json, after the applicant picks and confirms sentence by sentence which requirements of the Posting it answers.
-disable-model-invocation: true
+description: Draft the specific half of an Application's cover letter into cover-letter.json, after the applicant picks and confirms sentence by sentence which requirements of the Posting it answers. Use when the applicant asks for the letter or when extract-posting hands over.
 ---
 
 Draft the job-specific half of the cover letter for the Application named in the request (`$ARGUMENTS` in Claude Code). File formats: [docs/data-files.md](../../../docs/data-files.md).

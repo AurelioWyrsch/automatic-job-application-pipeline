@@ -91,7 +91,7 @@ The judgment steps are handled by skills in `.agents/skills/`, written for any c
 
 Three take an application slug:
 
-- `extract-posting` — completes `posting.json` from the snapshot (contact, address, requirements)
+- `extract-posting` — completes `posting.json` from the snapshot (contact, address, requirements), then hands over to `draft-cover-letter`
 - `draft-cover-letter` — offers one sentence per posting requirement (or a question where your profile is silent), lets you pick and confirm three to five, then drafts `intro`/`body` in `cover-letter.json` as plain prose (leaves `draft: true`) and opens it in your editor
 - `map-fields` — resolves unmatched fields in `form-fields.json` and teaches the Synonym Table
 
