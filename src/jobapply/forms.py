@@ -16,12 +16,12 @@ from urllib.parse import urldefrag
 
 import typer
 
+from . import browser
 from .application import COVER_LETTER_WAIVED, Application
-from .workspace import Workspace
 from .errors import JobapplyError
 from .fields_js import DETECT_FIELDS_JS
 from .matching import match_field
-from .posting import SETTLE_MS, looks_like_login_wall
+from .workspace import Workspace
 
 STORED_FIELD_KEYS = (
     "selector", "type", "label", "hints", "placeholder", "name", "id",
@@ -253,7 +253,7 @@ class FormCheck:
 
 def classify_form(requested_url: str, final_url: str, fields: list[dict[str, Any]]) -> str:
     """Why a visitor without a session cannot fill this Form, or "" for an Open Form."""
-    if looks_like_login_wall(requested_url, final_url):
+    if browser.looks_like_login_wall(requested_url, final_url):
         return f"login page at {final_url}"
     if any((f.get("type") or "").lower() == "password" for f in fields):
         return "the page asks for a password"
@@ -278,33 +278,19 @@ def record_form_check(app: Application, entry: dict[str, Any] | None, gated_reas
 
 
 def form_check(app: Application) -> FormCheck:
-    """Visit the Form URL in a fresh headless context, without the Workspace's browser profile:
-    what a visitor with no session sees decides Open or Gated (ADR 0004 amendment)."""
-    from playwright.sync_api import Error as PlaywrightError, sync_playwright
-
+    """Visit the Form URL without the Browser Session: what a visitor with no session sees
+    decides Open or Gated (ADR 0004 amendment)."""
     url = app.data.get("form_url")
     if not url:
         raise JobapplyError("application.json has no form_url")
     if app.applies_by_email:
         raise JobapplyError(f"{app.slug} applies by email ({app.application_email}); there is no Form to check.")
-    channel = (app.workspace.config.get("browser") or {}).get("channel", "chrome")
-    with sync_playwright() as p:
-        browser = p.chromium.launch(channel=channel, headless=True,
-                                    ignore_default_args=["--enable-automation"],
-                                    args=["--disable-blink-features=AutomationControlled"])
-        page = browser.new_page()
-        try:
-            page.goto(url, wait_until="load", timeout=45_000)
-        except PlaywrightError as exc:
-            browser.close()
-            return record_form_check(app, None, f"could not load {url}: {str(exc).splitlines()[0]}")
-        try:  # same settle budget as the Posting fetch: forms are rendered client-side too
-            page.wait_for_load_state("networkidle", timeout=SETTLE_MS)
-        except PlaywrightError:
-            pass
-        entry = scan_page(page, app)
-        final_url = page.url
-        browser.close()
+    try:
+        with browser.visit(app.workspace, url, session=False) as page:
+            entry = scan_page(page, app)
+            final_url = page.url
+    except JobapplyError as exc:
+        return record_form_check(app, None, str(exc))
     return record_form_check(app, entry, classify_form(url, final_url, entry["fields"]))
 
 
@@ -323,78 +309,32 @@ def fields_left_to_applicant(app: Application) -> list[str]:
 # -- the interactive session ---------------------------------------------------------
 
 
-def persistent_context(playwright, workspace: Workspace, *, headless: bool):
-    """Chrome on the Workspace's own profile (`.browser/`), so logins survive between runs and
-    the Posting fetch sees the same session as the Form. Without --enable-automation Chrome
-    reports navigator.webdriver = false, so sites that park automated browsers on an
-    interstitial show the real page."""
-    channel = (workspace.config.get("browser") or {}).get("channel", "chrome")
-    workspace.browser_dir.mkdir(parents=True, exist_ok=True)
-    return playwright.chromium.launch_persistent_context(
-        str(workspace.browser_dir), channel=channel, headless=headless, no_viewport=True,
-        ignore_default_args=["--enable-automation"],
-        args=["--disable-blink-features=AutomationControlled"],
-    )
-
-
 def login_session(workspace: Workspace, url: str) -> None:
-    """Open the profile headed so the applicant can log in to a site; the session stays in
-    `.browser/`. The tool never sees the credentials."""
-    from playwright.sync_api import sync_playwright
-
-    with sync_playwright() as p:
-        context = persistent_context(p, workspace, headless=False)
-        page = context.pages[0] if context.pages else context.new_page()
-        page.goto(url, wait_until="domcontentloaded")
+    """Open the Browser Session headed so the applicant can log in to a site; the login stays
+    in `.browser/`. The tool never sees the credentials."""
+    with browser.visit(workspace, url, session=True, headed=True, settle_ms=0):
         typer.echo(f"Browser open at {url}")
         typer.echo("Log in there. The session is kept in the workspace's .browser/ profile; nothing is stored by this tool.")
         _prompt("Press Enter when you are logged in (closes the browser)")
-        _close_quietly(context)
-
-
-def _close_quietly(context) -> None:
-    """Close the browser context; one the applicant already closed raises, and that is fine."""
-    from playwright.sync_api import Error as PlaywrightError
-
-    try:
-        context.close()
-    except PlaywrightError as exc:
-        if not _browser_was_closed(exc):
-            raise
-
-
-def _browser_was_closed(exc: Exception) -> bool:
-    """Playwright's TargetClosedError is not exported in every version; its message is stable."""
-    return "has been closed" in str(exc)
 
 
 def form_session(app: Application, start_with: str, *, wait_for_page: bool = True) -> None:
-    """Open the Form headed on the Workspace profile and scan or fill it. With `wait_for_page`
+    """Open the Form headed with the Browser Session and scan or fill it. With `wait_for_page`
     the applicant first logs in and navigates; an Open Form is worked on as soon as it loads."""
-    from playwright.sync_api import Error as PlaywrightError, sync_playwright
-
     url = app.data.get("form_url")
     if not url:
         raise JobapplyError("application.json has no form_url")
     if app.applies_by_email:
         raise JobapplyError(f"{app.slug} applies by email ({app.application_email}); there is no form to {start_with}. "
                             f"Use: jobapply email {app.slug}")
-    with sync_playwright() as p:
-        context = persistent_context(p, app.workspace, headless=False)
-        page = context.pages[0] if context.pages else context.new_page()
-        page.goto(url, wait_until="domcontentloaded")
-        typer.echo(f"Browser open at {url}")
-        if wait_for_page:
-            typer.echo("Log in and navigate to the form page if needed. Nothing is ever submitted by this tool.")
-            _prompt("Press Enter when the page to work on is showing")
-        else:
-            try:
-                page.wait_for_load_state("networkidle", timeout=20_000)
-            except PlaywrightError:
-                pass
-
-        action = start_with
-        try:
+    try:
+        with browser.visit(app.workspace, url, session=True, headed=True,
+                           settle_ms=0 if wait_for_page else 20_000) as page:
+            typer.echo(f"Browser open at {url}")
+            if wait_for_page:
+                typer.echo("Log in and navigate to the form page if needed. Nothing is ever submitted by this tool.")
+                _prompt("Press Enter when the page to work on is showing")
+            action = start_with
             while True:
                 if action == "scan":
                     _do_scan(page, app)
@@ -405,12 +345,9 @@ def form_session(app: Application, start_with: str, *, wait_for_page: bool = Tru
                 action = {"s": "scan", "f": "fill"}.get(answer.strip().lower()[:1], "quit")
                 if action == "quit":
                     break
-        except PlaywrightError as exc:
-            if not _browser_was_closed(exc):
-                raise
-            # The applicant closed Chrome themselves: that ends the session, it is not an error.
-            typer.secho("  the browser was closed", fg=typer.colors.YELLOW)
-        _close_quietly(context)
+    except browser.BrowserClosed:
+        # The applicant closed Chrome themselves: that ends the session, it is not an error.
+        typer.secho("  the browser was closed", fg=typer.colors.YELLOW)
 
 
 def _do_scan(page, app: Application) -> None:

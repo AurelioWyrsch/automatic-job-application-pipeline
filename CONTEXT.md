@@ -77,10 +77,14 @@ _Avoid_: merged PDF, bundle, combined file
 The external program `jobapply run` starts to complete a judgment file (`posting.json`, `cover-letter.json`, `form-fields.json`): today a coding agent running the repo's skills, named in the Workspace `config.json`. It runs **interactive** for the Cover Letter interview, in the applicant's terminal, and **unattended** for extraction and field mapping, where only its result is seen. The applicant still reviews what it wrote before the next step.
 _Avoid_: agent, assistant, LLM
 
+**Browser Session**:
+The tool-owned Chrome profile in the Workspace's `.browser/`, carrying the logins the applicant made with `jobapply login`. The Posting fetch and the scan/fill session open pages with it; the Form Check opens the Form without it, because what a visitor with no session sees is what decides Open Form or Gated Form.
+_Avoid_: browser profile, cookies, logged-in browser
+
 **Form Check**:
-The unattended visit to the Form, as a visitor without a session, that classifies it as an Open Form or a Gated Form and, for an Open Form, produces the Field Map, with the Operator mapping whatever the Synonym Table missed. Runs once the Cover Letter is done, while the applicant reviews the rendered documents; never alongside an interactive Operator.
+The unattended visit to the Form without the Browser Session, which classifies it as an Open Form or a Gated Form and, for an Open Form, produces the Field Map, with the Operator mapping whatever the Synonym Table missed. Runs once the Cover Letter is done, while the applicant reviews the rendered documents; never alongside an interactive Operator.
 _Avoid_: pre-scan, background scan, form probe
 
 **Workspace**:
-The directory holding one applicant's private data — Profile, Attachments, Applications, browser state and Template overrides — kept separate from the tool's own code.
+The directory holding one applicant's private data — Profile, Attachments, Applications, the Browser Session and Template overrides — kept separate from the tool's own code.
 _Avoid_: data folder, user folder

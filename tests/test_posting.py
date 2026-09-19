@@ -55,7 +55,7 @@ def test_proposal_from_bare_page_is_empty():
 
 
 def test_login_wall_is_detected_from_the_redirect():
-    from jobapply.posting import looks_like_login_wall
+    from jobapply.browser import looks_like_login_wall
     job = "https://www.linkedin.com/jobs/view/123"
     assert looks_like_login_wall(job, "https://www.linkedin.com/authwall?trk=x&sessionRedirect=...")
     assert looks_like_login_wall("https://ats.example.com/job/1", "https://ats.example.com/login?next=/job/1")

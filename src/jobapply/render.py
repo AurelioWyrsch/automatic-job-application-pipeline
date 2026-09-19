@@ -13,6 +13,7 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined, TemplateNotFo
 from markupsafe import Markup
 from pypdf import PdfWriter
 
+from . import browser
 from .application import COVER_LETTER_WAIVED, Application
 from .errors import JobapplyError
 from .i18n import Language
@@ -129,19 +130,6 @@ def render_html(app: Application, template_name: str, context: dict[str, Any]) -
         ) from exc
 
 
-def html_to_pdf(html: str, out: Path, *, base_url: Path | None = None) -> None:
-    from playwright.sync_api import sync_playwright
-
-    out.parent.mkdir(parents=True, exist_ok=True)
-    with sync_playwright() as p:
-        browser = p.chromium.launch(channel="chrome", headless=True)
-        page = browser.new_page()
-        page.set_content(html, wait_until="load")
-        page.emulate_media(media="print")
-        page.pdf(path=str(out), format="A4", print_background=True, prefer_css_page_size=True)
-        browser.close()
-
-
 def merge_pdfs(parts: list[Path], out: Path) -> None:
     writer = PdfWriter()
     for part in parts:
@@ -177,20 +165,18 @@ def render_application(app: Application, *, only: str | None = None, keep_html: 
         check_letter_ready(app)
     context = build_context(app)
 
+    # Both documents go through one Chrome (browser.pdf); the HTML is complete before it starts.
+    html: dict[str, str] = {}
     if only in (None, "cv"):
-        html = render_html(app, "cv.html", context)
-        if keep_html:
-            (app.out_dir / "cv.html").parent.mkdir(parents=True, exist_ok=True)
-            (app.out_dir / "cv.html").write_text(html, encoding="utf-8")
-        html_to_pdf(html, docs["cv"])
-        produced["cv"] = docs["cv"]
-
+        html["cv"] = render_html(app, "cv.html", context)
     if "cover_letter" in docs and only in (None, "cover_letter"):
-        html = render_html(app, "cover-letter.html", {**context, "style": app.letter_style})
-        if keep_html:
-            (app.out_dir / "cover-letter.html").write_text(html, encoding="utf-8")
-        html_to_pdf(html, docs["cover_letter"])
-        produced["cover_letter"] = docs["cover_letter"]
+        html["cover_letter"] = render_html(app, "cover-letter.html", {**context, "style": app.letter_style})
+    if keep_html:
+        for kind, text in html.items():
+            app.out_dir.mkdir(parents=True, exist_ok=True)
+            (app.out_dir / f"{kind.replace('_', '-')}.html").write_text(text, encoding="utf-8")
+    browser.pdf(app.workspace, {docs[kind]: text for kind, text in html.items()})
+    produced.update({kind: docs[kind] for kind in html})
 
     if only in (None, "merged"):
         parts = dossier_parts(app)

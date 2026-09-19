@@ -19,6 +19,7 @@ from urllib.parse import urljoin, urlsplit
 
 from bs4 import BeautifulSoup, Tag
 
+from . import browser
 from .application import Application
 from .errors import JobapplyError
 from .workspace import Workspace
@@ -31,46 +32,12 @@ class FetchResult:
     extracted: list[str] = field(default_factory=list)
 
 
-LOGIN_WALL_MARKERS = ("authwall", "/login", "/uas/login", "/checkpoint/", "/signin", "/sign-in", "/anmelden")
-
-
-def looks_like_login_wall(requested_url: str, final_url: str) -> bool:
-    """A Posting that redirected to a login page: LinkedIn's authwall, an ATS behind SSO, ..."""
-    if final_url.split("?", 1)[0].rstrip("/") == requested_url.split("?", 1)[0].rstrip("/"):
-        return False
-    path = final_url.lower()
-    return any(marker in path for marker in LOGIN_WALL_MARKERS)
-
-
-SETTLE_MS = 5_000  # how long a fetched page may keep loading after `load` before it is taken as is
-
-
 def download(url: str, workspace: Workspace) -> str:
-    """Load the page in headless Chrome on the Workspace's browser profile, so JS-rendered
-    postings work and a site the applicant logged in to (`jobapply login`) stays readable."""
-    from playwright.sync_api import Error as PlaywrightError, sync_playwright
-
-    from .forms import persistent_context
-
-    with sync_playwright() as p:
-        context = persistent_context(p, workspace, headless=True)
-        page = context.pages[0] if context.pages else context.new_page()
-        try:
-            page.goto(url, wait_until="load", timeout=45_000)
-        except PlaywrightError as exc:
-            context.close()
-            raise JobapplyError(f"Could not load {url}: {exc}") from exc
-        # Client-rendered postings fill the DOM after `load`; a few seconds of quiet network
-        # is enough for that. Waiting for a real idle is not an option: career sites keep
-        # polling (ABB on the Workspace profile never idled in 45 s), and the page as it is
-        # after the budget beats a reload cut off at domcontentloaded.
-        try:
-            page.wait_for_load_state("networkidle", timeout=SETTLE_MS)
-        except PlaywrightError:
-            pass
+    """Load the page in headless Chrome with the Browser Session, so JS-rendered postings work
+    and a site the applicant logged in to (`jobapply login`) stays readable."""
+    with browser.visit(workspace, url, session=True) as page:
         final_url, html = page.url, page.content()
-        context.close()
-    if looks_like_login_wall(url, final_url):
+    if browser.looks_like_login_wall(url, final_url):
         raise JobapplyError(
             f"{url} sent the browser to a login page ({final_url}).\n"
             f"  Log in once with: jobapply login {url}   then fetch again."

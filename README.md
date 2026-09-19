@@ -40,7 +40,7 @@ Quit at any pause with `q`; `jobapply run <slug>` resumes at the same step, beca
 
 Each step also exists as its own command (`new`, `fetch`, `check`, `render`, `scan`, `fill`, `email`) if you'd rather drive them yourself; `jobapply --help` lists them. `jobapply render <slug> --only cv|cover_letter|merged` renders one document, `--keep-html` also writes the intermediate HTML into `out/`. `jobapply open <slug> [letter|posting|fields|email|folder]` opens a file in your editor (`"editor"` in `config.json`, e.g. `"code -r"`). `jobapply new <posting-url>` creates one without running it; `--company`, `--role`, `--form` and `--lang` override what the page says. Any unique part of a slug works as the argument, e.g. `jobapply run acme`.
 
-`scan` and `fill` act on whatever page the browser is showing and can be repeated, so multi-page forms are handled page by page (`[s]` scan, `[f]` fill, `[q]` quit inside the session). The browser profile is persistent, so a login survives between runs. The Form Check deliberately does not use it: a form you can only reach logged in is gated, and you open it yourself.
+`scan` and `fill` act on whatever page the browser is showing and can be repeated, so multi-page forms are handled page by page (`[s]` scan, `[f]` fill, `[q]` quit inside the session). The Browser Session (the Chrome profile in `.browser/`) is persistent, so a login survives between runs. The Form Check deliberately does not use it: a form you can only reach logged in is gated, and you open it yourself.
 
 ## Your workspace
 
