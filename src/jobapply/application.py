@@ -45,6 +45,7 @@ EMPTY_COVER_LETTER: dict[str, Any] = {
     "salutation": "",
     "intro": [],
     "body": [],
+    "outlook": [],
 }
 
 
@@ -257,9 +258,9 @@ class Application:
         if not self.cover_letter_path.exists():
             return dict(EMPTY_COVER_LETTER)
         letter = deep_merge(EMPTY_COVER_LETTER, _read_json(self.cover_letter_path))
-        # `intro` and `body` are lists of paragraphs, but a hand-typed file may hold one
-        # string; blank lines then separate the paragraphs.
-        for key in ("intro", "body"):
+        # `intro`, `body` and `outlook` are lists of paragraphs, but a hand-typed file may
+        # hold one string; blank lines then separate the paragraphs.
+        for key in ("intro", "body", "outlook"):
             if isinstance(letter[key], str):
                 letter[key] = [p.strip() for p in letter[key].split("\n\n") if p.strip()]
         return letter
@@ -270,7 +271,7 @@ class Application:
         if self.cover_letter_waived:
             return False
         letter = self.cover_letter()
-        return bool(letter.get("draft")) and not any(letter.get(k) for k in ("subject", "salutation", "intro", "body"))
+        return bool(letter.get("draft")) and not any(letter.get(k) for k in ("subject", "salutation", "intro", "body", "outlook"))
 
     def posting_extracted(self) -> bool:
         """True once posting.json carries requirements: JSON-LD never yields them, so their

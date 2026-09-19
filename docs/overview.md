@@ -30,7 +30,7 @@ Five skills belong to the tool (`.agents/skills/`, symlinked from `.claude/skill
 | `setup-workspace` | Workspace | – | places `photo.jpg`, `sources/`, `attachments/`; runs `init` if needed; hands over to `import-documents` |
 | `import-documents` | Workspace | PDFs in `sources/`, `attachments/` | `profile/*.json`, `cover-letter-fixed.json`, `attachments/manifest.json`, `config.json` |
 | `extract-posting <slug>` | Application | `snapshot.md/html` | `posting.json`; corrects `application.json` (`form_url`, company, role, language) when the tool guessed poorly. Unattended |
-| `draft-cover-letter <slug>` | Application | `posting.json`, `profile/*.json`, `cover-letter-fixed.json` | `cover-letter.json` (`intro`, `body`); shows the posting facts first for review. Interactive |
+| `draft-cover-letter <slug>` | Application | `posting.json`, `profile/*.json`, `cover-letter-fixed.json` | `cover-letter.json` (`intro`, `body`, `outlook`); shows the posting facts first for review. Interactive |
 | `map-fields <slug>` | Application | `form-fields.json`, `profile/*.json`, `posting.json` | `form-fields.json` (`value` targets, `note` on fields left to you), `field-synonyms.json`. Unattended, inside the Form Check |
 
 ## Which files need your input
@@ -52,7 +52,7 @@ Per Application, created by `jobapply new`:
 |---|---|
 | `application.json` | Check `language`, `form_url`, `attachments`; optionally `style`, `letter_style`, `cover_letter: false`, `profile_overrides` |
 | `posting.json` | Review: `new`/`fetch` extract only what they can; `extract-posting` completes contact, address and requirements unattended, and `draft-cover-letter` shows the result before the interview |
-| `cover-letter.json` | Yes: `draft-cover-letter` writes `intro` (one sentence naming the role, rendered in the same paragraph as the fixed `about_me`) and `body` (the requirements); `[d]` in `run` sets `draft: false` |
+| `cover-letter.json` | Yes: `draft-cover-letter` writes `intro` (the hook: role plus one concrete reason, rendered in the same paragraph as the fixed `about_me`), `body` (two to four requirements with evidence) and `outlook` (the contribution sentence, rendered in the same paragraph as the fixed `closing`); `[d]` in `run` sets `draft: false` |
 | `form-fields.json` | After the Form Check: fields with `value: null` and a `note` are yours to answer in the browser; `"gated": true` means the Form needs your login |
 | `snapshot.*`, `email.md`, `out/` | No; outputs |
 

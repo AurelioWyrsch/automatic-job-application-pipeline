@@ -19,7 +19,7 @@ Agent-neutral skills live in `.agents/skills/<name>/SKILL.md` (`.claude/skills/`
 Each of the following takes an application slug:
 
 - `extract-posting` — complete `posting.json` from the fetched snapshot and correct `application.json` where the tool guessed poorly; unattended
-- `draft-cover-letter` — offer a sentence per requirement, let the applicant pick and confirm three to five, then draft the specific half of the cover letter into `cover-letter.json`
+- `draft-cover-letter` — offer a sentence per requirement, let the applicant pick and confirm two to four, then draft the specific half of the cover letter (hook, evidence, outlook) into `cover-letter.json`
 - `map-fields` — resolve unmatched fields in `form-fields.json` and extend the Synonym Table; unattended, inside the Form Check
 
 Agents without a skill mechanism: read the SKILL.md and follow it as instructions.

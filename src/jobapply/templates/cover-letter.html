@@ -36,7 +36,10 @@
   {% if opening %}{{ opening | md }}{% endif %}
   {% for para in fixed.about_me[1:] %}{{ para | md }}{% endfor %}
   {% for para in letter.body %}{{ para | md }}{% endfor %}
-  {% for para in fixed.closing %}{{ para | md }}{% endfor %}
+  {# The outlook sentence(s) and the first fixed closing paragraph form one paragraph. #}
+  {% set ending = (letter.outlook + fixed.closing[:1]) | join(" ") %}
+  {% if ending %}{{ ending | md }}{% endif %}
+  {% for para in fixed.closing[1:] %}{{ para | md }}{% endfor %}
 </div>
 
 <div class="signoff">

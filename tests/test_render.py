@@ -21,6 +21,7 @@ def _write_letter(application):
     application.cover_letter_path.write_text(json.dumps({
         "draft": False, "subject": "Bewerbung als Data Scientist", "salutation": "",
         "intro": ["Erster Absatz mit **fett**."], "body": ["- eins\n- zwei"],
+        "outlook": ["Ein Pensum von 50 % passt für mich."],
     }), encoding="utf-8")
 
 
@@ -55,6 +56,15 @@ def test_intro_and_about_me_share_one_paragraph(application):
     ctx = build_context(application)
     html = render_html(application, "cover-letter.html", ctx)
     assert f"<p>Erster Absatz mit <strong>fett</strong>. {first_about_me}</p>" in html
+
+
+def test_outlook_and_closing_share_one_paragraph(application):
+    _write_letter(application)
+    fixed = json.loads((application.workspace.root / "cover-letter-fixed.json").read_text(encoding="utf-8"))
+    first_closing = fixed["closing"]["de"][0]
+    ctx = build_context(application)
+    html = render_html(application, "cover-letter.html", ctx)
+    assert f"<p>Ein Pensum von 50 % passt für mich. {first_closing}</p>" in html
 
 
 def test_english_application_uses_english_labels(workspace):

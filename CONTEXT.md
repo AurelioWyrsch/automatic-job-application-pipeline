@@ -44,7 +44,7 @@ A named look for the Templates — heading treatment, one accent colour, photo s
 _Avoid_: theme, design, layout variant
 
 **Cover Letter**:
-The Application-specific letter, composed of a fixed part (same for every Application in a given language) and a specific part written by the applicant for this Posting. An Application may waive it when the Form does not ask for one.
+The Application-specific letter, composed of a fixed part (same for every Application in a given language) and a specific part written by the applicant for this Posting. The specific part is a hook (why this role at this employer), evidence (which requirements of the Posting the applicant answers, and where they proved it) and an outlook (what they want to contribute), in that order. An Application may waive it when the Form does not ask for one.
 _Avoid_: motivation letter, letter
 
 **Required Field**:

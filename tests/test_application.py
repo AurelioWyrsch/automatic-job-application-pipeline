@@ -77,10 +77,11 @@ def test_by_email_application_has_an_email_step_instead_of_scan_and_fill(applica
 def test_cover_letter_accepts_intro_and_body_typed_as_strings(application):
     """A hand-written (or Operator-written) letter may hold a paragraph as one string; blank lines split paragraphs."""
     application.cover_letter_path.write_text(json.dumps({
-        "draft": False, "intro": "Mit grossem Interesse habe ich Ihre Ausschreibung gelesen.",
-        "body": "Erster Absatz.\n\nZweiter Absatz.\n",
+        "draft": False, "intro": "Ihre Migration der Controlling-Reports ist genau meine Aufgabe als Werkstudentin.",
+        "body": "Erster Absatz.\n\nZweiter Absatz.\n", "outlook": "Ein Pensum von 50 % passt für mich.",
     }), encoding="utf-8")
     letter = application.cover_letter()
-    assert letter["intro"] == ["Mit grossem Interesse habe ich Ihre Ausschreibung gelesen."]
+    assert letter["intro"] == ["Ihre Migration der Controlling-Reports ist genau meine Aufgabe als Werkstudentin."]
     assert letter["body"] == ["Erster Absatz.", "Zweiter Absatz."]
+    assert letter["outlook"] == ["Ein Pensum von 50 % passt für mich."]
     assert {s.name: s.done for s in application.steps()}["letter"] is True

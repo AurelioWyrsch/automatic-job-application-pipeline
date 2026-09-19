@@ -1,5 +1,5 @@
 {
-  "_comment": "The fixed half of every cover letter, every Language in one file: each value is a language map {\"de\": ..., \"en\": ...} (a plain string is used in every Language). Markdown allowed. The specific half lives in applications/<slug>/cover-letter.json. Order in the letter: letter.intro, fixed.about_me, letter.body, fixed.closing; letter.intro (one sentence) and the first about_me paragraph form one paragraph. Subject: cover-letter.json's own \"subject\" wins; otherwise subject_with_reference when posting.reference is set, else subject_default. Salutation: cover-letter.json's own \"salutation\" wins; otherwise salutation_named[posting.contact.salutation] (\"_\" when the title is unknown) with {salutation} {first_name} {last_name}; otherwise salutation_default. email_body: the paragraphs of the covering email when the employer takes applications by email (form_url mailto:); placeholders {role}, {company}, {reference}.",
+  "_comment": "The fixed half of every cover letter, every Language in one file: each value is a language map {\"de\": ..., \"en\": ...} (a plain string is used in every Language). Markdown allowed. The specific half lives in applications/<slug>/cover-letter.json. Order in the letter (YOU-ME-WE): letter.intro, fixed.about_me, letter.body, letter.outlook, fixed.closing; letter.intro (the hook: role plus one concrete reason) and the first about_me paragraph form one paragraph, as do letter.outlook (what the applicant wants to contribute, optional Pensum/start date) and the first closing paragraph. about_me states only the current studies and job; closing is one indicative sentence. Subject: cover-letter.json's own \"subject\" wins; otherwise subject_with_reference when posting.reference is set, else subject_default. Salutation: cover-letter.json's own \"salutation\" wins; otherwise salutation_named[posting.contact.salutation] (\"_\" when the title is unknown) with {salutation} {first_name} {last_name}; otherwise salutation_default. email_body: the paragraphs of the covering email when the employer takes applications by email (form_url mailto:); placeholders {role}, {company}, {reference}.",
   "style": "classic",
   "letter_style": "",
   "accent": "#0f6b78",
@@ -17,7 +17,7 @@
   },
   "closing": {
     "de": ["Ich freue mich, Sie in einem persönlichen Gespräch kennenzulernen."],
-    "en": ["I would be delighted to discuss my application with you in person."]
+    "en": ["I look forward to discussing my application with you in person."]
   },
   "sign_off": {"de": "Freundliche Grüsse", "en": "Kind regards"},
   "email_body": {
