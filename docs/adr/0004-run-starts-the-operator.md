@@ -34,3 +34,11 @@ Decisions in the amendment that a reader will wonder about:
 - The Form Check only sees the page the Form URL lands on. ATS flows behind an "Apply" button or account creation come out Gated; clicking through headlessly is out of scope.
 - `map-fields` writes a `note` on every field it leaves `null`, because unattended it has no chat to explain in and `run` prints those before fill.
 - Only the tool's own field detection runs in the Form Check; the Operator maps leftovers from `form-fields.json` and never browses. ADR 0001 stands: every Operator run is still a file transform.
+
+## Amendment 2026-09-19: the Form Check follows the letter step
+
+The fork above is undone: the Form Check no longer overlaps the letter interview. It starts once the letter step is done — whatever finished it: the Operator, the editor, a hand-written file — and runs in the background while the documents are rendered and the applicant checks the PDFs; `run` waits for it before fill, and a pause during the PDF review still hands the running job back so it is never killed.
+
+Why: two Claude Code sessions in one terminal — the interactive Operator in the foreground, `claude -p map-fields` behind it — left the interview unusable in real applications: mouse reports leaked into the prompt as text and `/exit` stopped working (anthropics/claude-code#76816). Claude Code's documented workaround, `CLAUDE_CODE_DISABLE_MOUSE=1`, was set by the tool and did not cure it; it is gone with the overlap. The rule is now simple and holds by construction: no unattended Operator runs while an interactive one is on the terminal.
+
+What stays from the earlier amendment: the unattended extraction before the interview, the `operator_unattended` template, the visitor-only Form Check, the Gated/Open handling and the `note`s on unmapped fields. What is lost: the check's wall time is no longer hidden behind the interview; render plus the PDF review hides most of it instead.

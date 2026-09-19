@@ -51,14 +51,6 @@ def test_run_operator_starts_it_in_the_workspace_with_the_workspace_exported(app
     assert Path(cwd) == application.workspace.root
     assert env["JOBAPPLY_WORKSPACE"] == str(application.workspace.root)
     assert env["PATH"] == os.environ["PATH"]
-    assert env["CLAUDE_CODE_DISABLE_MOUSE"] == "1"  # claude-code#76816; the applicant's own value wins
-
-
-def test_interactive_operator_keeps_the_applicants_mouse_setting(application, fake_claude, monkeypatch):
-    monkeypatch.setenv("CLAUDE_CODE_DISABLE_MOUSE", "0")
-    seen = {}
-    run_operator(application, "draft-cover-letter", runner=lambda argv, cwd, env: seen.update(env) or 0)
-    assert seen["CLAUDE_CODE_DISABLE_MOUSE"] == "0"
 
 
 def test_unattended_mode_has_its_own_template_and_key(workspace, fake_claude):
@@ -95,3 +87,4 @@ def test_reset_terminal_writes_mouse_off_only_to_a_tty():
     reset_terminal(pipe)
     assert tty.getvalue() == TERMINAL_RESET and pipe.getvalue() == ""
     assert "?1004l" in TERMINAL_RESET and "[<99u" in TERMINAL_RESET and "?1003l" in TERMINAL_RESET
+    assert "1049" not in TERMINAL_RESET  # restores a stale cursor position and overwrites the screen

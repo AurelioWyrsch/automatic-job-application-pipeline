@@ -68,15 +68,17 @@ jobapply run <url> ──► application.json, snapshot.*, posting.json         
         ▼
   extract-posting <slug> ──► posting.json complete                   unattended Operator
         │
+        ▼
+  draft-cover-letter <slug> ──► cover-letter.json                    interactive Operator
+        │  [d] marks it done
+        │
         ├──────────────────────────────┐
         ▼                              ▼  (background: the Form Check)
-  draft-cover-letter <slug>      web Form: jobapply check ──► form-fields.json
-  ──► cover-letter.json               │   Open Form:  map-fields <slug> (unattended) ──► values, notes, field-synonyms.json
-        │  interactive Operator       │   Gated Form: "gated": true, nothing else
-        │  [d] marks it done          │
+  jobapply render ──► out/       web Form: jobapply check ──► form-fields.json
+  (CV, letter, Dossier)               │   Open Form:  map-fields <slug> (unattended) ──► values, notes, field-synonyms.json
+        │  blocks on Required Fields  │   Gated Form: "gated": true, nothing else
+        │  you check the PDFs         │
         ◄──────────────────────────────┘  run waits here
-        ▼
-  jobapply render ──► out/ (CV, letter, Dossier)                     blocks on Required Fields
         │
         ├─ Open Form:  jobapply fill      browser opens and fills at once (you press submit)
         │

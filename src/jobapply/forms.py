@@ -21,7 +21,7 @@ from .workspace import Workspace
 from .errors import JobapplyError
 from .fields_js import DETECT_FIELDS_JS
 from .matching import match_field
-from .posting import looks_like_login_wall
+from .posting import SETTLE_MS, looks_like_login_wall
 
 STORED_FIELD_KEYS = (
     "selector", "type", "label", "hints", "placeholder", "name", "id",
@@ -294,13 +294,14 @@ def form_check(app: Application) -> FormCheck:
                                     args=["--disable-blink-features=AutomationControlled"])
         page = browser.new_page()
         try:
-            try:
-                page.goto(url, wait_until="networkidle", timeout=45_000)
-            except PlaywrightError:
-                page.goto(url, wait_until="domcontentloaded", timeout=45_000)
+            page.goto(url, wait_until="load", timeout=45_000)
         except PlaywrightError as exc:
             browser.close()
             return record_form_check(app, None, f"could not load {url}: {str(exc).splitlines()[0]}")
+        try:  # same settle budget as the Posting fetch: forms are rendered client-side too
+            page.wait_for_load_state("networkidle", timeout=SETTLE_MS)
+        except PlaywrightError:
+            pass
         entry = scan_page(page, app)
         final_url = page.url
         browser.close()

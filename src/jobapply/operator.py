@@ -58,13 +58,15 @@ def operator_command(workspace: Workspace, skill: str, slug: str, *, unattended:
 
 
 # Everything an Operator session switches on and a killed one leaves behind: mouse tracking
-# (1000/1002/1003, SGR 1006), focus reporting (1004), bracketed paste (2004), the alternate
-# screen (1049), the kitty keyboard stack (`CSI < n u` pops n entries) and xterm's
-# modifyOtherKeys. The next program then reads "^[[<35;39;10M", "^[[O" or "^[[99;5u" as
-# typed text (anthropics/claude-code#84029, #76816). Unknown sequences are ignored by
-# terminals that lack the feature.
+# (1000/1002/1003, SGR 1006), focus reporting (1004), bracketed paste (2004), the kitty
+# keyboard stack (`CSI < n u` pops n entries) and xterm's modifyOtherKeys. The next program
+# then reads "^[[<35;39;10M", "^[[O" or "^[[99;5u" as typed text (anthropics/claude-code#84029,
+# #76816). Unknown sequences are ignored by terminals that lack the feature. Not in the list:
+# leaving the alternate screen (`?1049l`) — on a terminal already on the normal screen it
+# still "restores the cursor" to a stale position and the next lines overwrite old ones;
+# Claude Code renders inline and never enters it.
 TERMINAL_RESET = ("\x1b[?1000l\x1b[?1002l\x1b[?1003l\x1b[?1006l\x1b[?1004l\x1b[?2004l"
-                  "\x1b[<99u\x1b[>4;0m\x1b[?1049l\x1b[?25h\x1b[0m")
+                  "\x1b[<99u\x1b[>4;0m\x1b[?25h\x1b[0m")
 MOUSE_OFF = TERMINAL_RESET  # kept for callers of the earlier name
 
 
@@ -94,16 +96,9 @@ def run_operator(app, skill: str, runner: Runner | None = None) -> int | None:
         return None
     if runner is None:
         runner = lambda argv, cwd, env: subprocess.call(argv, cwd=cwd, env=env)  # noqa: E731
-    env = _env(app)
-    # Claude Code's mouse tracking leaks reports into the prompt as text when a report is
-    # split across two stdin reads, which happens under load (anthropics/claude-code#76816)
-    # — and the Form Check keeps Chrome and a second Operator busy during the interview.
-    # Its documented workaround; harmless for any other Operator, and a value the
-    # applicant set wins.
-    env.setdefault("CLAUDE_CODE_DISABLE_MOUSE", "1")
     reset_terminal()
     try:
-        return runner(argv, str(app.workspace.root), env)
+        return runner(argv, str(app.workspace.root), _env(app))
     finally:
         reset_terminal()
 

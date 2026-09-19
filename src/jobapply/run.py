@@ -3,10 +3,11 @@
 The state is derived from the files in the Application folder, so quitting at
 any pause and running the command again resumes at the same place.
 
-The sequence (ADR 0004 amendment): fetch; `extract-posting` with the unattended Operator;
-then the Form Check in the background while the interactive Operator runs the letter
-interview; render; and for an Open Form the browser opens and fills at once, for a Gated
-Form the applicant takes over.
+The sequence (ADR 0004 and its amendments): fetch; `extract-posting` with the unattended
+Operator; the letter interview with the interactive Operator; then the Form Check in the
+background while the documents are rendered and reviewed (never alongside the interactive
+Operator: two Claude Code sessions in one terminal garble the interview); and for an Open
+Form the browser opens and fills at once, for a Gated Form the applicant takes over.
 """
 
 from __future__ import annotations
@@ -151,8 +152,8 @@ def extract_posting(app: Application) -> bool:
 
 class FormCheckJob(threading.Thread):
     """The Form Check plus, for an Open Form with unmatched fields, `map-fields` unattended.
-    Runs in the background while the interview owns the terminal; its output is kept for
-    `summary_lines`, never printed while it runs."""
+    Runs in the background while the applicant reviews the rendered documents; its output is
+    kept for `summary_lines`, never printed while it runs."""
 
     def __init__(self, app: Application, *, check=None, mapper=None):
         super().__init__(daemon=True, name=f"form-check {app.slug}")
@@ -272,7 +273,6 @@ def _run(app: Application, check_factory) -> FormCheckJob | None:
         if not steps["letter"].done:
             if app.letter_untouched() and not app.posting_extracted():
                 extract_posting(app)
-            job = start_form_check(app, job, check_factory)
             interactive = operator_command(app.workspace, "draft-cover-letter", app.slug)
             if interactive is not None and app.letter_untouched() and not auto_started:
                 auto_started = True
@@ -304,9 +304,9 @@ def _run(app: Application, check_factory) -> FormCheckJob | None:
             last_blocker = "letter"
             continue
 
-        if job is not None:
-            finish_form_check(job)
-            job = None
+        # The letter is done, so no interactive Operator can start any more: the Form Check
+        # may run now, overlapping render and the PDF review.
+        job = start_form_check(app, job, check_factory)
 
         if not steps["render"].done:
             typer.echo("render: producing the PDFs …")
@@ -315,13 +315,13 @@ def _run(app: Application, check_factory) -> FormCheckJob | None:
                 typer.echo(f"  {kind:13s} {path.name}")
             answer = _prompt("Open the PDFs to check them?", "y/n/q", "y")
             if answer == "q":
-                return None
+                return job
             if answer == "y":
                 for path in app.document_paths().values():
                     _open(path)
                 answer = _prompt("PDFs OK? Enter to continue, r to re-render after edits, q to pause.", "Enter/r/q", "c")
                 if answer == "q":
-                    return None
+                    return job
                 if answer == "r":
                     for path in app.document_paths().values():
                         path.unlink(missing_ok=True)
@@ -344,6 +344,9 @@ def _run(app: Application, check_factory) -> FormCheckJob | None:
             return None
 
         if not steps["fill"].done:
+            if job is not None:
+                finish_form_check(job)
+                job = None
             if not app.form_checked:
                 typer.echo("check: looking at the Form …")
                 job = check_factory(app)

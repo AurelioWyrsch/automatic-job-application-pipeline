@@ -42,6 +42,9 @@ def looks_like_login_wall(requested_url: str, final_url: str) -> bool:
     return any(marker in path for marker in LOGIN_WALL_MARKERS)
 
 
+SETTLE_MS = 5_000  # how long a fetched page may keep loading after `load` before it is taken as is
+
+
 def download(url: str, workspace: Workspace) -> str:
     """Load the page in headless Chrome on the Workspace's browser profile, so JS-rendered
     postings work and a site the applicant logged in to (`jobapply login`) stays readable."""
@@ -53,13 +56,18 @@ def download(url: str, workspace: Workspace) -> str:
         context = persistent_context(p, workspace, headless=True)
         page = context.pages[0] if context.pages else context.new_page()
         try:
-            page.goto(url, wait_until="networkidle", timeout=45_000)
+            page.goto(url, wait_until="load", timeout=45_000)
         except PlaywrightError as exc:
-            try:
-                page.goto(url, wait_until="domcontentloaded", timeout=45_000)
-            except PlaywrightError:
-                context.close()
-                raise JobapplyError(f"Could not load {url}: {exc}") from exc
+            context.close()
+            raise JobapplyError(f"Could not load {url}: {exc}") from exc
+        # Client-rendered postings fill the DOM after `load`; a few seconds of quiet network
+        # is enough for that. Waiting for a real idle is not an option: career sites keep
+        # polling (ABB on the Workspace profile never idled in 45 s), and the page as it is
+        # after the budget beats a reload cut off at domcontentloaded.
+        try:
+            page.wait_for_load_state("networkidle", timeout=SETTLE_MS)
+        except PlaywrightError:
+            pass
         final_url, html = page.url, page.content()
         context.close()
     if looks_like_login_wall(url, final_url):

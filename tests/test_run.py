@@ -1,4 +1,4 @@
-"""`jobapply run`: the background Form Check and the letter step's auto-start rule."""
+"""`jobapply run`: the background Form Check, started once the letter step is done."""
 
 import json
 
@@ -81,3 +81,35 @@ def test_letter_untouched_until_anyone_writes_into_it(application):
     assert not application.letter_untouched()
     application.data["cover_letter"] = False
     assert not application.letter_untouched()
+
+
+def test_run_starts_the_form_check_only_once_the_letter_is_done_and_hands_it_back_on_pause(application, monkeypatch):
+    """No unattended Operator may overlap the interview: the Form Check starts at the
+    letter-done transition, and a pause during the PDF review returns the running job
+    so `run` can wait for it."""
+    import jobapply.render
+    import jobapply.run as run_mod
+
+    application.snapshot_html.write_text("<html></html>")
+    application.cover_letter_path.write_text(json.dumps({"draft": True, "intro": ["Hallo"], "body": ["…"]}))
+    events = []
+
+    class Fake:
+        def __init__(self, app):
+            events.append("check started")
+
+        def start(self):
+            pass
+
+    def prompt(text, choices, default):
+        events.append(f"prompt: {text[:12]}")
+        return "d" if text.startswith("a to run") or text.startswith("Enter to re-check") else "q"
+
+    monkeypatch.setattr(run_mod, "_prompt", prompt)
+    monkeypatch.setattr(run_mod, "operator_command", lambda *a, **k: None)
+    monkeypatch.setattr(run_mod, "show_preflight", lambda app: None)
+    monkeypatch.setattr(jobapply.render, "render_application", lambda app: {})
+
+    job = run_mod._run(application, Fake)
+    assert isinstance(job, Fake)
+    assert events == ["prompt: Enter to re-", "check started", "prompt: Open the PDF"]

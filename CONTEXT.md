@@ -78,7 +78,7 @@ The external program `jobapply run` starts to complete a judgment file (`posting
 _Avoid_: agent, assistant, LLM
 
 **Form Check**:
-The unattended visit to the Form, as a visitor without a session, that classifies it as an Open Form or a Gated Form and, for an Open Form, produces the Field Map, with the Operator mapping whatever the Synonym Table missed. Runs while the applicant is busy with the Cover Letter.
+The unattended visit to the Form, as a visitor without a session, that classifies it as an Open Form or a Gated Form and, for an Open Form, produces the Field Map, with the Operator mapping whatever the Synonym Table missed. Runs once the Cover Letter is done, while the applicant reviews the rendered documents; never alongside an interactive Operator.
 _Avoid_: pre-scan, background scan, form probe
 
 **Workspace**:
