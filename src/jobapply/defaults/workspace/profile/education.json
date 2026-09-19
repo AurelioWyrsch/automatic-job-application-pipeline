@@ -17,7 +17,9 @@
       "institution": "Fachhochschule Nordwestschweiz",
       "location": {"de": "Windisch, Schweiz", "en": "Windisch, Switzerland"},
       "degree": "Bachelor of Science in Business Information Technology",
-      "bullets": []
+      "bullets": [
+        {"de": "Bachelorarbeit: Prognose des Zahlungsverhaltens von KMU-Kunden mit Gradient Boosting (Note 5.5)", "en": "Bachelor thesis: forecasting SME customers' payment behaviour with gradient boosting (grade 5.5)"}
+      ]
     }
   ]
 }

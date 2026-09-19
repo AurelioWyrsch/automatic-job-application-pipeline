@@ -20,7 +20,10 @@
       "location": {"de": "Bern, Schweiz", "en": "Bern, Switzerland"},
       "title": {"de": "Marketing-Assistentin", "en": "Marketing Assistant"},
       "workload": 50,
-      "bullets": []
+      "bullets": [
+        {"de": "Pflege der Kundendatenbank und Auswertung von Kampagnen in Excel", "en": "Maintained the customer database and evaluated campaigns in Excel"},
+        {"de": "Organisation von vier Messeauftritten pro Jahr", "en": "Organised four trade-fair appearances a year"}
+      ]
     }
   ]
 }

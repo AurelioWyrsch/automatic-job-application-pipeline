@@ -46,6 +46,7 @@ def test_missing_recommended_field_is_a_warning(workspace, application):
 
 
 def test_field_lists_come_from_config(workspace, application):
+    _set_profile(workspace, **{"personal.permit": ""})
     workspace.config["profile_fields"] = {"required": ["personal.permit"], "recommended": []}
     report = preflight(application)
     assert report.errors == ["profile/profile.json: required field 'personal.permit' is empty"]

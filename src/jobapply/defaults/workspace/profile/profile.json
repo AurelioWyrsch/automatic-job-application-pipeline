@@ -4,7 +4,7 @@
   "last_name": "Muster",
   "gender": {"de": "Frau", "en": "Female"},
   "photo": "photo.png",
-  "signature": null,
+  "signature": "signature.png",
   "contact": {
     "street": "Musterweg 12",
     "postal_code": "8000",
@@ -17,10 +17,10 @@
   "personal": {
     "salutation": {"de": "Frau", "en": "Ms"},
     "birth_date": "1998-04-12",
-    "nationality": {"de": "Schweizerin", "en": "Swiss"},
-    "permit": "",
-    "marital_status": ""
+    "nationality": {"de": "Deutsch", "en": "German"},
+    "permit": {"de": "Aufenthaltsbewilligung B", "en": "B permit"},
+    "marital_status": {"de": "ledig", "en": "Single"}
   },
   "summary": {"de": "Masterstudentin in Applied Information and Data Science mit Berufserfahrung in der Finanzbranche. Ich suche eine Einstiegsmöglichkeit im Bereich Data Science mit 40–60 % Pensum.", "en": "Master's student in Applied Information and Data Science with work experience in the financial industry, looking for an entry-level data science role at 40–60 %."},
-  "interests": {"de": "Bergsteigen, Fotografie, Schach", "en": "Mountaineering, photography, chess"}
+  "interests": {"de": "In den Bergen bin ich am liebsten mit Seil und Pickel unterwegs und führe im Sommer als Tourenleiterin SAC-Gruppen auf Hochtouren. Unterwegs fotografiere ich analog und entwickle die Filme selbst. Am Schachbrett spiele ich seit der Kantonsschule im Verein und organisiere das jährliche Blitzturnier unserer Sektion.", "en": "In the mountains I am happiest on rope and ice axe, and in summer I lead SAC groups on alpine tours. Along the way I shoot analogue film and develop it myself. At the chessboard I have played for my club since secondary school and organise our section's annual blitz tournament."}
 }

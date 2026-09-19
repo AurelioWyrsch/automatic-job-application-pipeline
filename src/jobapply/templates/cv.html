@@ -26,10 +26,15 @@
       {% if p.nationality %}<dt class="nationality">{{ labels.nationality }}</dt><dd>{{ p.nationality }}</dd>{% endif %}
       {% if p.permit %}<dt class="permit">{{ labels.permit }}</dt><dd>{{ p.permit }}</dd>{% endif %}
       {% if p.marital_status %}<dt class="marital_status">{{ labels.marital_status }}</dt><dd>{{ p.marital_status }}</dd>{% endif %}
-      {% if l.portfolio %}<dt class="portfolio">{{ labels.portfolio }}</dt><dd><a href="{{ l.portfolio }}">{{ l.portfolio | replace("https://", "") }}</a></dd>{% endif %}
-      {% if l.linkedin %}<dt class="linkedin">{{ labels.linkedin }}</dt><dd><a href="{{ l.linkedin }}">{{ l.linkedin | replace("https://", "") }}</a></dd>{% endif %}
-      {% if l.github %}<dt class="github">{{ labels.github }}</dt><dd><a href="{{ l.github }}">{{ l.github | replace("https://", "") }}</a></dd>{% endif %}
     </dl>
+    {% set links = l.items() | rejectattr(1, "none") | rejectattr(1, "eq", "") | list %}
+    {% if links %}
+    <div class="links">
+      {% for key, url in links %}
+      <span class="link {{ key }}"><span class="label">{{ labels[key] | default(key | capitalize) }}</span> <a href="{{ url }}">{{ url | bare_url }}</a></span>
+      {% endfor %}
+    </div>
+    {% endif %}
   </div>
   {% if photo %}<img class="photo" src="{{ photo }}" alt="">{% endif %}
 </div>
@@ -105,7 +110,7 @@
 {% if profile.interests %}
 <section class="interests">
   <h2>{{ labels.interests }}</h2>
-  <p>{{ profile.interests }}</p>
+  <p class="prose">{{ profile.interests }}</p>
 </section>
 {% endif %}
 </body>

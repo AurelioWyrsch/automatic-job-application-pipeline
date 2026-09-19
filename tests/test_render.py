@@ -135,12 +135,22 @@ def test_letter_without_subject_renders_the_default_subject(application):
 
 def test_marital_status_appears_only_when_set(workspace, application):
     html = render_html(application, "cv.html", build_context(application))
-    assert "Zivilstand" not in html
+    assert "Zivilstand" in html and "ledig" in html
     profile = workspace.profile()
-    profile["personal"]["marital_status"] = "ledig"
+    profile["personal"]["marital_status"] = ""
     _write_profile(workspace, profile)
     html = render_html(application, "cv.html", build_context(application))
-    assert "Zivilstand" in html and "ledig" in html
+    assert "Zivilstand" not in html
+
+
+def test_links_render_any_key_with_a_bare_address(workspace, application):
+    profile = workspace.profile()
+    profile["links"] = {"linkedin": "https://www.linkedin.com/in/mara-muster/", "xing": "https://xing.com/profile/mara", "github": ""}
+    _write_profile(workspace, profile)
+    html = render_html(application, "cv.html", build_context(application))
+    assert '>LinkedIn</span> <a href="https://www.linkedin.com/in/mara-muster/">linkedin.com/in/mara-muster</a>' in html
+    assert '>Xing</span> <a href="https://xing.com/profile/mara">xing.com/profile/mara</a>' in html
+    assert 'class="link github"' not in html
 
 
 def _set_look(workspace, **settings):

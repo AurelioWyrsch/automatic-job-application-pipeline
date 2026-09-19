@@ -5,7 +5,7 @@ Layout::
     workspace/
       config.json            default language, language packs, browser settings
       profile/               the Profile, four files merged into one dict (ADR 0005):
-        profile.json           identity, contact, personal, summary, interests
+        profile.json           identity, contact, links, personal, summary, interests
         experience.json        experience
         education.json         education
         skills.json            skills, languages, certifications

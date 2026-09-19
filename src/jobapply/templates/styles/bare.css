@@ -8,6 +8,7 @@ h2 {
 }
 .head .photo { width: 30mm; }
 .details { display: flex; flex-wrap: wrap; gap: 0.1em 0.5em; }
-.details dt.birth_date, .details dt.nationality, .details dt.portfolio, .details dt.linkedin, .details dt.github { display: none; }
+.details dt.birth_date, .details dt.nationality { display: none; }
+.links .label { display: none; }
 .details dt::after { content: ":"; }
 .details dd:not(:last-child)::after { content: " ·"; color: #999; }

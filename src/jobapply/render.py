@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import mimetypes
+import re
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +27,11 @@ def _data_uri(path: Path | None) -> str | None:
     return f"data:{mime};base64,{base64.b64encode(path.read_bytes()).decode()}"
 
 
+def _bare_url(url: str) -> str:
+    """The address as printed next to its label: no scheme, no www., no trailing slash."""
+    return re.sub(r"^https?://(www\.)?", "", url).rstrip("/")
+
+
 def _markdown(text: str) -> Markup:
     return Markup(markdown.markdown(text, extensions=["sane_lists"]))
 
@@ -40,6 +46,7 @@ def _environment(workspace: Workspace) -> Environment:
         lstrip_blocks=True,
     )
     env.filters["md"] = _markdown
+    env.filters["bare_url"] = _bare_url
     return env
 
 

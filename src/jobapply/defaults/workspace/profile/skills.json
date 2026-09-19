@@ -22,9 +22,14 @@
     {
       "name": {"de": "Englisch", "en": "English"},
       "level": {"de": "Verhandlungssicher (C1)", "en": "Fluent (C1)"}
+    },
+    {
+      "name": {"de": "Französisch", "en": "French"},
+      "level": {"de": "Gute Kenntnisse (B2)", "en": "Good working knowledge (B2)"}
     }
   ],
   "certifications": [
+    {"date": "2025-11", "name": "Microsoft Certified: Power BI Data Analyst Associate (PL-300)", "issuer": "Microsoft"},
     {"date": "2024-03", "name": "Google Data Analytics Professional Certificate", "issuer": "Coursera"}
   ]
 }
